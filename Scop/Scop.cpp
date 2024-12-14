@@ -1,5 +1,5 @@
 #include "Scop.h"
-
+  
 namespace scop
 {
 	Scop::Scop()
