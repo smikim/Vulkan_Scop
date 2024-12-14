@@ -3,13 +3,12 @@
 #include <iostream>
 
 int main() {
-  
+
     scop::Scop * scop;
     try
     {
         scop = new scop::Scop();
 
- 
         scop->run();
     }
     catch (const std::bad_alloc& e)
@@ -25,5 +24,4 @@ int main() {
     delete scop;
 
     return EXIT_SUCCESS;
-
 }
