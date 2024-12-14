@@ -8,7 +8,7 @@ GlfwWindow::GlfwWindow(uint32_t w, uint32_t h, std::string& name)
 
 GlfwWindow::~GlfwWindow()
 {
-	glfwDestroyWindow(_window);
+	glfwDestroyWindow(_Window);
 	glfwTerminate();
 }
 
@@ -19,6 +19,6 @@ void GlfwWindow::initWindow()
 	
 	// TO DO
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	_window = glfwCreateWindow(_width, _height, _windowName.c_str(), nullptr, nullptr);
+	_Window = glfwCreateWindow(_width, _height, _windowName.c_str(), nullptr, nullptr);
 
 }

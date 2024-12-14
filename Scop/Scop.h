@@ -2,6 +2,7 @@
 
 #include "vulkan/vulkan.h"
 #include "GlfwWindow.h"
+#include "VulkanRenderer.h"
 
 namespace scop
 {
@@ -23,6 +24,9 @@ namespace scop
 		uint32_t _height = 720;
 		std::string _windowName = "Scop";
 		GlfwWindow _window{ _width, _height, _windowName };
+		
+		vks::VulkanRenderer _renderer;
+
 	};
 
 }

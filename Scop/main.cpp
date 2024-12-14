@@ -1,14 +1,16 @@
 #include "Scop.h"
 
+
 #include <iostream>
 
 int main() {
 
+  
     scop::Scop * scop;
     try
     {
         scop = new scop::Scop();
-
+        scop->prepare();
         scop->run();
     }
     catch (const std::bad_alloc& e)

@@ -14,13 +14,13 @@ public:
 	GlfwWindow(const GlfwWindow&) = delete;
 	GlfwWindow& operator=(const GlfwWindow) = delete;
 	
-	bool shouldClose() { return glfwWindowShouldClose(_window); }
+	bool shouldClose() { return glfwWindowShouldClose(_Window); }
 
 private:
 	void initWindow();
 
 
-	GLFWwindow* _window;
+	GLFWwindow* _Window;
 
 	uint32_t _width;
 	uint32_t _height;

@@ -21,6 +21,7 @@ namespace scop
 
 	void Scop::prepare()
 	{
+		_renderer.initVulkan();
 	}
 
 	void Scop::render()

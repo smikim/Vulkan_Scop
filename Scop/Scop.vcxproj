@@ -136,10 +136,19 @@
     <ClCompile Include="GlfwWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Scop.cpp" />
+    <ClCompile Include="VulkanDebug.cpp" />
+    <ClCompile Include="VulkanInstance.cpp" />
+    <ClCompile Include="VulkanRenderer.cpp" />
+    <ClCompile Include="VulkanTools.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GlfwWindow.h" />
     <ClInclude Include="Scop.h" />
+    <ClInclude Include="VulkanDebug.h" />
+    <ClInclude Include="VulkanInitializers.h" />
+    <ClInclude Include="VulkanInstance.h" />
+    <ClInclude Include="VulkanRenderer.h" />
+    <ClInclude Include="VulkanTools.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
