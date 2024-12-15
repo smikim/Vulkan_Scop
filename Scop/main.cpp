@@ -1,6 +1,5 @@
 #include "Scop.h"
 
-
 #include <iostream>
 
 int main() {
