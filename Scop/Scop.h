@@ -25,7 +25,7 @@ namespace scop
 		std::string _windowName = "Scop";
 		GlfwWindow _window{ _width, _height, _windowName };
 		
-		vks::VulkanRenderer _renderer;
+		vks::VulkanRenderer _renderer{ _window };
 
 	};
 

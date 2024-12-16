@@ -15,6 +15,7 @@ public:
 	GlfwWindow& operator=(const GlfwWindow) = delete;
 	
 	bool shouldClose() { return glfwWindowShouldClose(_Window); }
+	GLFWwindow* getGLFWwindow() const { return _Window; }
 
 private:
 	void initWindow();

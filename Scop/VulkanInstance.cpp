@@ -119,7 +119,32 @@ namespace vks
 			vks::debug::setupDebugging(_Instance);
 		}
 
+		query_gpus();
+
 		return result;
+	}
+
+	VkInstance VulkanInstance::getInstance() const
+	{
+		return _Instance;
+	}
+
+	VulkanPhysicalDevice& VulkanInstance::get_first_gpu()
+	{
+		assert(!gpus.empty() && "No physical devices were found on the system.");
+
+		// Find a discrete GPU
+		for (auto& gpu : gpus)
+		{
+			if (gpu->get_device_properties().deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+			{
+				return *gpu;
+			}
+		}
+
+		// Otherwise just pick the first one
+		std::cerr << "Couldn't find a discrete physical device, picking default GPU" << std::endl;
+		return *gpus[0];
 	}
 
 	std::vector<const char*> VulkanInstance::get_required_surface_extensions() const
@@ -133,5 +158,29 @@ namespace vks
 		}*/
 
 		return extensions;
+	}
+
+	void VulkanInstance::query_gpus()
+	{
+		// Physical device
+		uint32_t gpuCount = 0;
+		// Get number of available physical devices
+		VK_CHECK_RESULT(vkEnumeratePhysicalDevices(_Instance, &gpuCount, nullptr));
+		if (gpuCount == 0) {
+			throw std::runtime_error("No device with Vulkan support found");
+		}
+		// Enumerate devices
+		std::vector<VkPhysicalDevice> physicalDevices(gpuCount);
+		VkResult result = vkEnumeratePhysicalDevices(_Instance, &gpuCount, physicalDevices.data());
+		if (result != VK_SUCCESS) {
+
+			throw std::runtime_error("Could not enumerate physical devices : \n");
+		}
+
+		// Create gpus wrapper objects from the VkPhysicalDevice's
+		for (auto& physical_device : physicalDevices)
+		{
+			gpus.push_back(std::make_unique<VulkanPhysicalDevice>(*this, physical_device));
+		}
 	}
 }
