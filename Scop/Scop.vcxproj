@@ -140,6 +140,8 @@
     <ClCompile Include="VulkanDevice.cpp" />
     <ClCompile Include="VulkanInstance.cpp" />
     <ClCompile Include="VulkanPhysicalDevice.cpp" />
+    <ClCompile Include="VulkanPipeline.cpp" />
+    <ClCompile Include="VulkanPipelineState.cpp" />
     <ClCompile Include="VulkanQueue.cpp" />
     <ClCompile Include="VulkanRenderer.cpp" />
     <ClCompile Include="VulkanSwapChain.cpp" />
@@ -154,6 +156,8 @@
     <ClInclude Include="VulkanInitializers.h" />
     <ClInclude Include="VulkanInstance.h" />
     <ClInclude Include="VulkanPhysicalDevice.h" />
+    <ClInclude Include="VulkanPipeline.h" />
+    <ClInclude Include="VulkanPipelineState.h" />
     <ClInclude Include="VulkanQueue.h" />
     <ClInclude Include="VulkanRenderer.h" />
     <ClInclude Include="VulkanSwapChain.h" />
