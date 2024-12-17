@@ -230,6 +230,11 @@ namespace vks
 		return _LogicalDevice;
 	}
 
+	const VulkanPhysicalDevice& VulkanDevice::get_gpu() const
+	{
+		return _gpu;
+	}
+
 	VkCommandPool VulkanDevice::createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags)
 	{
 		VkCommandPoolCreateInfo cmdPoolInfo = {};

@@ -38,6 +38,7 @@ namespace vks
 		}
 
 	}
+
 	const VkPhysicalDeviceFeatures VulkanPhysicalDevice::get_device_features() const
 	{
 		return _DeviceFeatures;

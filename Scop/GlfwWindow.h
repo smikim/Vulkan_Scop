@@ -17,6 +17,9 @@ public:
 	bool shouldClose() { return glfwWindowShouldClose(_Window); }
 	GLFWwindow* getGLFWwindow() const { return _Window; }
 
+	const uint32_t getWidth() const { return _width; }
+	const uint32_t getHeight() const { return _height; }
+
 private:
 	void initWindow();
 

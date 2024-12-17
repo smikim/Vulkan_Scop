@@ -2,9 +2,12 @@
 #include "VulkanInstance.h"
 #include "GlfwWindow.h"
 #include "VulkanDevice.h"
+#include "VulkanSwapChain.h"
+
 
 namespace vks
 {
+
 	class VulkanRenderer
 	{
 	public:
@@ -29,6 +32,8 @@ namespace vks
 			return device_extensions;
 		}
 
+		uint32_t _width;
+		uint32_t _height;
 
 		vks::VulkanInstance _instance;
 		GlfwWindow& _window;
@@ -37,5 +42,9 @@ namespace vks
 
 		/** @brief Set of device extensions to be enabled for this example and whether they are optional (must be set in the derived constructor) */
 		std::unordered_map<const char*, bool> device_extensions;
+
+		// Wraps the swap chain to present images (framebuffers) to the windowing system
+		std::unique_ptr<VulkanSwapChain> _swapChain;
+
 	};
 }

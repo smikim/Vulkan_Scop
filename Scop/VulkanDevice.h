@@ -23,6 +23,7 @@ namespace vks
 		void					create_graphics_queue(VkSurfaceKHR surface);
 
 		VkDevice				getLogicalDevice() const;
+		const VulkanPhysicalDevice& get_gpu() const;
 
 	private:
 		VkCommandPool			createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
