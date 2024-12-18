@@ -19,6 +19,9 @@
     <Filter Include="Graphics">
       <UniqueIdentifier>{e085614f-bc8d-4172-bcd0-e0bc72a65d43}</UniqueIdentifier>
     </Filter>
+    <Filter Include="shader">
+      <UniqueIdentifier>{ce81fb46-594d-408b-b7fb-ff23c501159d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -58,6 +61,12 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="VulkanPipelineState.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicPSO.cpp">
+      <Filter>Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanUtils.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -104,10 +113,24 @@
     <ClInclude Include="VulkanPipelineState.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="BasicPSO.h">
+      <Filter>Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanUtils.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\shader.frag">
+      <Filter>shader</Filter>
+    </None>
+    <None Include="..\shaders\shader.vert">
+      <Filter>shader</Filter>
+    </None>
   </ItemGroup>
 </Project>

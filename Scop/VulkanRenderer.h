@@ -3,7 +3,9 @@
 #include "GlfwWindow.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapChain.h"
-
+#include "BasicPSO.h"
+#include "VulkanPipelineState.h"
+#include <vector>
 
 namespace vks
 {
@@ -15,6 +17,11 @@ namespace vks
 		~VulkanRenderer();
 
 		bool initVulkan();
+		void init_basicPipeline(Graphics::BasicPSO* basicPSO, VkPipelineLayout pipelineLayout);
+
+		Graphics::BasicPSO* _basicPSO;
+		VulkanPipeline* _basicPipeline;
+		VkPipelineLayout _basicPipelineLayout{ VK_NULL_HANDLE };
 
 	private:
 		// TODO
@@ -32,6 +39,11 @@ namespace vks
 			return device_extensions;
 		}
 
+		void createPipelineLayout();
+		void setupRenderPass();
+		void setupDepthStencil(uint32_t& width, uint32_t& height);
+		void setupFrameBuffer(uint32_t& width, uint32_t& height);
+
 		uint32_t _width;
 		uint32_t _height;
 
@@ -45,6 +57,19 @@ namespace vks
 
 		// Wraps the swap chain to present images (framebuffers) to the windowing system
 		std::unique_ptr<VulkanSwapChain> _swapChain;
+		VkRenderPass _RenderPass{ VK_NULL_HANDLE };
+		
+		// Depth buffer format (selected during Vulkan initialization)
+		VkFormat _DepthFormat;
+		bool _requiresStencil{ false };
+		/** @brief Default depth stencil attachment used by the default render pass */
+		struct {
+			VkImage image;
+			VkDeviceMemory memory;
+			VkImageView view;
+		} _depthStencil{};
 
+		// List of available frame buffers (same as number of swap chain images)
+		std::vector<VkFramebuffer>_FrameBuffers;
 	};
 }

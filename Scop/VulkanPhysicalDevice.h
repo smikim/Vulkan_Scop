@@ -45,6 +45,8 @@ namespace vks
 
 		VkBool32 is_present_supported(VkSurfaceKHR surface, uint32_t queue_family_index) const;
 
+		uint32_t getMemoryType(uint32_t typeBits, VkMemoryPropertyFlags properties, VkBool32* memTypeFound = nullptr) const;
+
 	private:
 		// Handle to the Vulkan instance
 		VulkanInstance& _Instance;
