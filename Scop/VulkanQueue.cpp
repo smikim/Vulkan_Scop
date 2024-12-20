@@ -28,6 +28,11 @@ namespace vks
 		return _Queue;
 	}
 
+	VkBool32 VulkanQueue::support_present() const
+	{
+		return can_present;
+	}
+
 }
 
 

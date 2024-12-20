@@ -137,6 +137,7 @@
     <ClCompile Include="GlfwWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Scop.cpp" />
+    <ClCompile Include="VulkanCommandBuffer.cpp" />
     <ClCompile Include="VulkanDebug.cpp" />
     <ClCompile Include="VulkanDevice.cpp" />
     <ClCompile Include="VulkanInstance.cpp" />
@@ -154,6 +155,7 @@
     <ClInclude Include="GlfwWindow.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="Scop.h" />
+    <ClInclude Include="VulkanCommandBuffer.h" />
     <ClInclude Include="VulkanDebug.h" />
     <ClInclude Include="VulkanDevice.h" />
     <ClInclude Include="VulkanInitializers.h" />

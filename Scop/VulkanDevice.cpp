@@ -132,9 +132,12 @@ namespace vks
 
 		create_graphics_queue(surface);
 
+		std::cout << "device command pool" << std::endl;
+	
 		// Create a default command pool for graphics command buffers
 		_CommandPool = createCommandPool(get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT, 0).get_family_index());
-
+		std::cout << _CommandPool << std::endl;
+		std::cout << "device command pool" << std::endl;
 		return result;
 
 	}
@@ -233,6 +236,45 @@ namespace vks
 	const VulkanPhysicalDevice& VulkanDevice::get_gpu() const
 	{
 		return _gpu;
+	}
+
+	const VulkanQueue& VulkanDevice::get_suitable_graphics_queue() const
+	{
+		for (uint32_t queue_family_index = 0U; queue_family_index < queues.size(); ++queue_family_index)
+		{
+			VulkanQueue const& first_queue = queues[queue_family_index][0];
+
+			uint32_t queue_count = first_queue.get_properties().queueCount;
+
+			if (first_queue.support_present() && 0 < queue_count)
+			{
+				return queues[queue_family_index][0];
+			}
+		}
+
+		return get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
+	}
+
+	const VulkanQueue& VulkanDevice::get_queue_by_present(uint32_t queue_index) const
+	{
+		for (uint32_t queue_family_index = 0U; queue_family_index < queues.size(); ++queue_family_index)
+		{
+			VulkanQueue const& first_queue = queues[queue_family_index][0];
+
+			uint32_t queue_count = first_queue.get_properties().queueCount;
+
+			if (first_queue.support_present() && queue_index < queue_count)
+			{
+				return queues[queue_family_index][queue_index];
+			}
+		}
+
+		throw std::runtime_error("Queue not found");
+	}
+
+	VkCommandPool VulkanDevice::get_command_pool() const
+	{
+		return _CommandPool;
 	}
 
 	VkCommandPool VulkanDevice::createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags)

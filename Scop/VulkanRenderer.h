@@ -5,10 +5,15 @@
 #include "VulkanSwapChain.h"
 #include "BasicPSO.h"
 #include "VulkanPipelineState.h"
+#include "VulkanCommandBuffer.h"
+
 #include <vector>
+
+#define MAX_CONCURRENT_FRAMES 2
 
 namespace vks
 {
+	class VulkanDevice;
 
 	class VulkanRenderer
 	{
@@ -18,6 +23,27 @@ namespace vks
 
 		bool initVulkan();
 		void init_basicPipeline(Graphics::BasicPSO* basicPSO, VkPipelineLayout pipelineLayout);
+		
+		void buildBasicCommandBuffers();
+		VkResult prepareFrame();
+		VkResult submitFrame();
+
+		uint32_t getWidth() { return _width; }
+		uint32_t getHeight() { return _height; }
+
+		VkFramebuffer get_frameBuffer_by_index(uint32_t index) const {
+			return _FrameBuffers[index];
+		}
+
+		VkCommandBuffer getCurrentCommandBuffer() const {
+			//assert(isFrameStarted && "Cannot get command buffer when frame not in progress");
+			return _drawCommandBuffer->get_commandBuffer_by_index(_currentImageIndex);
+			//return drawCmdBuffers[currentFrame];
+		}
+
+		vks::VulkanDevice* getVulkanDevice() const {
+			return _vulkanDevice;
+		}
 
 		Graphics::BasicPSO* _basicPSO;
 		VulkanPipeline* _basicPipeline;
@@ -43,9 +69,20 @@ namespace vks
 		void setupRenderPass();
 		void setupDepthStencil(uint32_t& width, uint32_t& height);
 		void setupFrameBuffer(uint32_t& width, uint32_t& height);
+		void createCommandPool(); 
+		
+		void createSynchronizationPrimitives();
+
+		VkResult submitCommandBuffer();
+		
 
 		uint32_t _width;
 		uint32_t _height;
+		VkClearColorValue _defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
+
+		// To select the correct sync objects, we need to keep track of the current frame
+		uint32_t _currentFrame{ 0 };
+		uint32_t _currentImageIndex{ 0 };
 
 		vks::VulkanInstance _instance;
 		GlfwWindow& _window;
@@ -71,5 +108,20 @@ namespace vks
 
 		// List of available frame buffers (same as number of swap chain images)
 		std::vector<VkFramebuffer>_FrameBuffers;
+
+		// Command buffer pool
+		VkCommandPool _CmdPool{ VK_NULL_HANDLE };
+
+		// Command buffers used for rendering
+		//std::vector<VkCommandBuffer> _drawCmdBuffers;
+
+		// Semaphores are used to coordinate operations within the graphics queue and ensure correct command ordering
+		std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> _PresentCompleteSemaphores{};
+		std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> _RenderCompleteSemaphores{};
+
+		std::array<VkFence, MAX_CONCURRENT_FRAMES> _WaitFences{};
+
+		// Command buffers used for rendering
+		VulkanCommandBuffer* _drawCommandBuffer;
 	};
 }

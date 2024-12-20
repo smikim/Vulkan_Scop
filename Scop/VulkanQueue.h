@@ -22,7 +22,8 @@ namespace vks
 
 		uint32_t						get_family_index() const;
 		VkQueue							get_queue() const;
-
+		VkBool32						support_present() const;
+		
 	private:
 		VulkanDevice& _device;
 

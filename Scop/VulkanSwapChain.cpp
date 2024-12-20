@@ -17,6 +17,71 @@ namespace vks
 	{
 		VkPhysicalDevice physicalDevice = _vulkanDevice.get_gpu().get_physical_device();
 
+		// Get available queue family properties
+		uint32_t queueCount;
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, NULL);
+		assert(queueCount >= 1);
+
+		std::vector<VkQueueFamilyProperties> queueProps(queueCount);
+		vkGetPhysicalDeviceQueueFamilyProperties(physicalDevice, &queueCount, queueProps.data());
+
+		// Iterate over each queue to learn whether it supports presenting:
+		// Find a queue with present support
+		// Will be used to present the swap chain images to the windowing system
+		std::vector<VkBool32> supportsPresent(queueCount);
+		for (uint32_t i = 0; i < queueCount; i++)
+		{
+			vkGetPhysicalDeviceSurfaceSupportKHR(physicalDevice, i, _Surface, &supportsPresent[i]);
+		}
+
+		// Search for a graphics and a present queue in the array of queue
+		// families, try to find one that supports both
+		uint32_t graphicsQueueNodeIndex = UINT32_MAX;
+		uint32_t presentQueueNodeIndex = UINT32_MAX;
+		for (uint32_t i = 0; i < queueCount; i++)
+		{
+			if ((queueProps[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
+			{
+				if (graphicsQueueNodeIndex == UINT32_MAX)
+				{
+					graphicsQueueNodeIndex = i;
+				}
+
+				if (supportsPresent[i] == VK_TRUE)
+				{
+					graphicsQueueNodeIndex = i;
+					presentQueueNodeIndex = i;
+					break;
+				}
+			}
+		}
+		if (presentQueueNodeIndex == UINT32_MAX)
+		{
+			// If there's no queue that supports both present and graphics
+			// try to find a separate present queue
+			for (uint32_t i = 0; i < queueCount; ++i)
+			{
+				if (supportsPresent[i] == VK_TRUE)
+				{
+					presentQueueNodeIndex = i;
+					break;
+				}
+			}
+		}
+
+		// Exit if either a graphics or a presenting queue hasn't been found
+		if (graphicsQueueNodeIndex == UINT32_MAX || presentQueueNodeIndex == UINT32_MAX)
+		{
+			std::cerr << "Could not find a graphics and/or presenting queue!" << std::endl;
+		}
+
+		if (graphicsQueueNodeIndex != presentQueueNodeIndex)
+		{
+			std::cerr << "Separate graphics and presenting queues are not supported yet!" << std::endl;
+		}
+
+		_queueNodeIndex = graphicsQueueNodeIndex;
+
 		// Get list of supported surface formats
 		uint32_t formatCount;
 		VK_CHECK_RESULT(vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, _Surface, &formatCount, NULL));
@@ -260,6 +325,28 @@ namespace vks
 
 			VK_CHECK_RESULT(vkCreateImageView(logicalDevice, &colorAttachmentView, nullptr, &_buffers[i].view));
 		}
+	}
+
+	VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
+	{
+
+		// Present the current frame buffer to the swap chain
+		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
+		// This ensures that the image is not presented to the windowing system until all commands have been submitted
+
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.pNext = NULL;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &_SwapChain;
+		presentInfo.pImageIndices = &imageIndex;
+		// Check if a wait semaphore has been specified to wait for before presenting the image
+		if (waitSemaphore != VK_NULL_HANDLE)
+		{
+			presentInfo.pWaitSemaphores = &waitSemaphore;
+			presentInfo.waitSemaphoreCount = 1;
+		}
+		return vkQueuePresentKHR(queue, &presentInfo);
 	}
 
 	void VulkanSwapChain::cleanup()

@@ -148,7 +148,7 @@ namespace vks {
 
 	VulkanPipeline::~VulkanPipeline()
 	{
-		
+		vkDestroyPipeline(_vulkanDevice.getLogicalDevice(), _GraphicsPipeline, nullptr);
 	}
 
 	void VulkanPipeline::bind(VkCommandBuffer commandBuffer)

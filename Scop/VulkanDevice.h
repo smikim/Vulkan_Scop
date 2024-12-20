@@ -25,6 +25,16 @@ namespace vks
 		VkDevice				getLogicalDevice() const;
 		const VulkanPhysicalDevice& get_gpu() const;
 
+		/**
+		 * @brief Finds a suitable graphics queue to submit to
+		 * @return The first present supported queue, otherwise just any graphics queue
+		 */
+		const VulkanQueue&		get_suitable_graphics_queue() const;
+
+		const VulkanQueue&		get_queue_by_present(uint32_t queue_index) const;
+		
+		VkCommandPool			get_command_pool() const;
+
 	private:
 		VkCommandPool			createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 

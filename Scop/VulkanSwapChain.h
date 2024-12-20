@@ -41,6 +41,7 @@ namespace vks {
 		uint32_t _imageCount;
 		std::vector<VkImage> _Images;
 		std::vector<SwapChainBuffer> _buffers;
+		uint32_t _queueNodeIndex = UINT32_MAX;
 
 		VulkanSwapChain(vks::VulkanInstance& instance, vks::VulkanDevice& vulkanDevice, VkSurfaceKHR surface);
 		//~VulkanSwapChain();
@@ -59,6 +60,19 @@ namespace vks {
 		* @param vsync (Optional, default = false) Can be used to force vsync-ed rendering (by using VK_PRESENT_MODE_FIFO_KHR as presentation mode)
 		*/
 		void create(uint32_t& width, uint32_t& height, bool vsync = false);
+		
+		/**
+		* Queue an image for presentation
+		*
+		* @param queue Presentation queue for presenting the image
+		* @param imageIndex Index of the swapchain image to queue for presentation
+		* @param waitSemaphore (Optional) Semaphore that is waited on before the image is presented (only used if != VK_NULL_HANDLE)
+		*
+		* @return VkResult of the queue presentation
+		*/
+		VkResult queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore = VK_NULL_HANDLE);
+		/* Free all Vulkan resources acquired by the swapchain */
+
 		void cleanup();
 	};
 

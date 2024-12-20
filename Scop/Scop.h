@@ -17,6 +17,7 @@ namespace scop
 		void run();
 		void prepare();
 		void render();
+		
 
 	private:
 		

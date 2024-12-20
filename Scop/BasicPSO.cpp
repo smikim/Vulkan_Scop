@@ -9,6 +9,8 @@ namespace Graphics
 
 	BasicPSO::~BasicPSO()
 	{
+		vkDestroyShaderModule(_vulkanDevice.getLogicalDevice(), _VertShaderModule, nullptr);
+		vkDestroyShaderModule(_vulkanDevice.getLogicalDevice(), _FragShaderModule, nullptr);
 	}
 
 	void BasicPSO::initPSO()
