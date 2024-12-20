@@ -470,21 +470,14 @@ namespace vks
 		vkDeviceWaitIdle(logicalDevice);
 
 		auto extent = _window.getExtent();
-		int width;
-		int height;
-		glfwGetFramebufferSize(_window.getGLFWwindow(), &width, &height);
 
-		//while (extent.width == 0 || extent.height == 0) {
-		while (width == 0 || height == 0) {
-			//extent = _window.getExtent();
-			glfwGetFramebufferSize(_window.getGLFWwindow(), &width, &height);
+		while (extent.width == 0 || extent.height == 0) {
+			extent = _window.getExtent();
 			glfwWaitEvents();
 		}
 		
-		//_width = extent.width;
-		_width = width;
-		//_height = extent.height;
-		_height = height;
+		_width = extent.width;
+		_height = extent.height;
 
 		_swapChain->create(_width, _height);
 		// Recreate the frame buffers
