@@ -122,12 +122,16 @@ namespace vks
 		VkDevice logicalDevice = _vulkanDevice.getLogicalDevice();
 		// Use a fence to wait until the command buffer has finished execution before using it again
 		vkWaitForFences(logicalDevice, 1, &waitFence, VK_TRUE, UINT64_MAX);
-		VK_CHECK_RESULT(vkResetFences(logicalDevice, 1, &waitFence));
-
+		
 		// Get the next swap chain image from the implementation
 		// Note that the implementation is free to return the images in any order, so we must use the acquire function and can't just cycle through the images/imageIndex on our own
 
 		VkResult result = vkAcquireNextImageKHR(logicalDevice, _SwapChain, UINT64_MAX, presentCompleteSemaphore, VK_NULL_HANDLE, imageIndex);
+		
+		VK_CHECK_RESULT(vkResetFences(logicalDevice, 1, &waitFence));
+
+
+		
 		//if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 		//	//windowResize();
 		//	return;
@@ -329,7 +333,6 @@ namespace vks
 
 	VkResult VulkanSwapChain::queuePresent(VkQueue queue, uint32_t imageIndex, VkSemaphore waitSemaphore)
 	{
-
 		// Present the current frame buffer to the swap chain
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
 		// This ensures that the image is not presented to the windowing system until all commands have been submitted

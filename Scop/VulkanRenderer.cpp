@@ -47,12 +47,6 @@ namespace vks
 		vkDestroyCommandPool(_vulkanDevice->getLogicalDevice(), _CmdPool, nullptr);
 
 		delete _vulkanDevice;
-
-		
-		
-		
-
-		
 	}
 
 	bool VulkanRenderer::initVulkan()
@@ -90,6 +84,7 @@ namespace vks
 		createPipelineLayout();
 		init_basicPipeline(_basicPSO, _basicPipelineLayout);
 
+		_prepared = true;
 
 		return true;
 	}
@@ -124,6 +119,9 @@ namespace vks
 
 	void VulkanRenderer::buildBasicCommandBuffers()
 	{
+		if (!_prepared)
+			return;
+
 		//vks::VulkanCommandBuffer * drawcommandBuffers = getDrawCommandBuffers();
 
 		for (int32_t i = 0; i < _drawCommandBuffer->get_commandBuffer_size(); ++i)
@@ -180,7 +178,8 @@ namespace vks
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
 			// TODO
-			//windowResize();
+			_window.resetWindowResizedFlag();
+			windowResize();
 			std::cout << "beginFrame(): return nullptr" << std::endl;
 			return result;
 		}
@@ -196,9 +195,12 @@ namespace vks
 	{
 		auto result = submitCommandBuffer();
 
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-			//resetWindowResized();
-			//windowResize();
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _window.wasWindowResized()) {
+			if (_window.wasWindowResized()) {
+				result = VK_ERROR_OUT_OF_DATE_KHR;
+			}
+			_window.resetWindowResizedFlag();
+			windowResize();
 			return result;
 		}
 		else if (result != VK_SUCCESS) {
@@ -451,6 +453,73 @@ namespace vks
 
 		return result;
 
+	}
+
+	void VulkanRenderer::windowResize()
+	{
+		VkDevice logicalDevice = _vulkanDevice->getLogicalDevice();
+		std::cout << "windowResize()" << std::endl;
+		if (!_prepared)
+		{
+
+			return;
+		}
+		_prepared = false;
+		_resized = true;
+
+		vkDeviceWaitIdle(logicalDevice);
+
+		auto extent = _window.getExtent();
+		int width;
+		int height;
+		glfwGetFramebufferSize(_window.getGLFWwindow(), &width, &height);
+
+		//while (extent.width == 0 || extent.height == 0) {
+		while (width == 0 || height == 0) {
+			//extent = _window.getExtent();
+			glfwGetFramebufferSize(_window.getGLFWwindow(), &width, &height);
+			glfwWaitEvents();
+		}
+		
+		//_width = extent.width;
+		_width = width;
+		//_height = extent.height;
+		_height = height;
+
+		_swapChain->create(_width, _height);
+		// Recreate the frame buffers
+		vkDestroyImageView(logicalDevice, _depthStencil.view, nullptr);
+		vkDestroyImage(logicalDevice, _depthStencil.image, nullptr);
+		vkFreeMemory(logicalDevice, _depthStencil.memory, nullptr);
+		setupDepthStencil(_width, _height);
+		for (uint32_t i = 0; i < _FrameBuffers.size(); i++) {
+			vkDestroyFramebuffer(logicalDevice, _FrameBuffers[i], nullptr);
+		}
+		setupFrameBuffer(_width, _height);
+
+		delete _drawCommandBuffer;
+		_drawCommandBuffer = new VulkanCommandBuffer(*_vulkanDevice, _CmdPool, _swapChain->_imageCount);
+
+		// Command buffers need to be recreated as they may store
+		// references to the recreated frame buffer
+		//destroyCommandBuffers();
+		//createCommandBuffers();
+		//buildCommandBuffers();
+
+
+		//for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
+		//	vkDestroyFence(logicalDevice, _WaitFences[i], nullptr);
+		//	vkDestroySemaphore(logicalDevice, _PresentCompleteSemaphores[i], nullptr);
+		//	vkDestroySemaphore(logicalDevice, _RenderCompleteSemaphores[i], nullptr);
+		//	//vkDestroyBuffer(device, uniformBuffers[i].buffer, nullptr);
+		//	//vkFreeMemory(device, uniformBuffers[i].memory, nullptr);
+		//}
+		//createSynchronizationPrimitives();
+
+		vkDeviceWaitIdle(logicalDevice);
+
+
+		_prepared = true;
 	}
 
 }

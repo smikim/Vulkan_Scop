@@ -27,6 +27,7 @@ namespace vks
 		void buildBasicCommandBuffers();
 		VkResult prepareFrame();
 		VkResult submitFrame();
+		
 
 		uint32_t getWidth() { return _width; }
 		uint32_t getHeight() { return _height; }
@@ -38,6 +39,7 @@ namespace vks
 		VkCommandBuffer getCurrentCommandBuffer() const {
 			//assert(isFrameStarted && "Cannot get command buffer when frame not in progress");
 			return _drawCommandBuffer->get_commandBuffer_by_index(_currentImageIndex);
+			//return _drawCommandBuffer->get_commandBuffer_by_index(_currentFrame);
 			//return drawCmdBuffers[currentFrame];
 		}
 
@@ -74,10 +76,14 @@ namespace vks
 		void createSynchronizationPrimitives();
 
 		VkResult submitCommandBuffer();
-		
+		void windowResize();
 
 		uint32_t _width;
 		uint32_t _height;
+		
+		bool _prepared = false;
+		bool _resized = false;
+
 		VkClearColorValue _defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 
 		// To select the correct sync objects, we need to keep track of the current frame
