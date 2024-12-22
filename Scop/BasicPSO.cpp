@@ -22,7 +22,9 @@ namespace Graphics
 
 		vks::RasterizationState RState;
 
-		RState.cull_mode = VK_CULL_MODE_NONE;
+		//RState.cull_mode = VK_CULL_MODE_NONE;
+		RState.cull_mode = VK_CULL_MODE_BACK_BIT;;
+		RState.front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 		_pipelineState.set_rasterization_state(RState);
 

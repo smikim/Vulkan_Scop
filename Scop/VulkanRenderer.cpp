@@ -12,6 +12,9 @@ namespace vks
 
 	vks::VulkanRenderer::~VulkanRenderer()
 	{
+		vkDestroyDescriptorPool(_vulkanDevice->getLogicalDevice(), _basicDescriptorPool, nullptr);
+		vkDestroyDescriptorSetLayout(_vulkanDevice->getLogicalDevice(), _basicDescriptorSetLayout, nullptr);
+		
 		vkDestroyPipelineLayout(_vulkanDevice->getLogicalDevice(), _basicPipelineLayout, nullptr);
 		_swapChain->cleanup();
 		
@@ -35,8 +38,8 @@ namespace vks
 			vkDestroyFence(logicalDevice, _WaitFences[i], nullptr);
 			vkDestroySemaphore(logicalDevice, _PresentCompleteSemaphores[i], nullptr);
 			vkDestroySemaphore(logicalDevice, _RenderCompleteSemaphores[i], nullptr);
-			//vkDestroyBuffer(device, uniformBuffers[i].buffer, nullptr);
-			//vkFreeMemory(device, uniformBuffers[i].memory, nullptr);
+			vkDestroyBuffer(logicalDevice, _uniformBuffers[i].buffer, nullptr);
+			vkFreeMemory(logicalDevice, _uniformBuffers[i].memory, nullptr);
 		}
 
 		delete _drawCommandBuffer;
@@ -82,7 +85,16 @@ namespace vks
 		_drawCommandBuffer = new VulkanCommandBuffer(*_vulkanDevice, _CmdPool, _swapChain->_imageCount);
 
 		_basicPSO = new Graphics::BasicPSO(*_vulkanDevice, _RenderPass);
+		
+		createUniformBuffers();
+		createDescriptorSetLayout();
+		createDescriptorPool();
+		createDescriptorSets();
+
 		createPipelineLayout();
+
+		
+
 		init_basicPipeline(_basicPSO, _basicPipelineLayout);
 
 		_prepared = true;
@@ -130,6 +142,9 @@ namespace vks
 
 		//vks::VulkanCommandBuffer * drawcommandBuffers = getDrawCommandBuffers();
 
+		// TODO
+		uint32_t index = 0;
+
 		for (int32_t i = 0; i < _drawCommandBuffer->get_commandBuffer_size(); ++i)
 		{
 			VkCommandBuffer commandBuffer = _drawCommandBuffer->get_commandBuffer_by_index(i);
@@ -155,6 +170,10 @@ namespace vks
 			_drawCommandBuffer->set_scissor(commandBuffer, width, height);
 
 			_basicPipeline->bind(commandBuffer);
+
+			index = (index + 1) % MAX_CONCURRENT_FRAMES;
+			// Bind descriptor set for the currrent frame's uniform buffer, so the shader uses the data from that buffer for this draw
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &_uniformBuffers[index].descriptorSet, 0, nullptr);
 
 			_model->bind(commandBuffer);
 			_model->draw(commandBuffer);
@@ -235,8 +254,8 @@ namespace vks
 		VkPipelineLayoutCreateInfo pipelineLayoutCI{};
 		pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipelineLayoutCI.pNext = nullptr;
-		pipelineLayoutCI.setLayoutCount = 0;
-		pipelineLayoutCI.pSetLayouts = nullptr;
+		pipelineLayoutCI.setLayoutCount = 1;
+		pipelineLayoutCI.pSetLayouts = &_basicDescriptorSetLayout;
 		pipelineLayoutCI.pushConstantRangeCount = 0;
 		pipelineLayoutCI.pPushConstantRanges = nullptr;
 
@@ -521,6 +540,146 @@ namespace vks
 
 
 		_prepared = true;
+	}
+
+	void VulkanRenderer::createDescriptorSetLayout()
+	{
+		// Binding 0: Uniform buffer (Vertex shader)
+		VkDescriptorSetLayoutBinding layoutBinding{};
+		layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		layoutBinding.descriptorCount = 1;
+		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		layoutBinding.pImmutableSamplers = nullptr;
+
+		VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
+		descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		descriptorLayoutCI.pNext = nullptr;
+		descriptorLayoutCI.bindingCount = 1;
+		descriptorLayoutCI.pBindings = &layoutBinding;
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(_vulkanDevice->getLogicalDevice(), &descriptorLayoutCI, nullptr, &_basicDescriptorSetLayout));
+	}
+
+	void VulkanRenderer::createUniformBuffers()
+	{
+		// Prepare and initialize the per-frame uniform buffer blocks containing shader uniforms
+		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
+		VkMemoryRequirements memReqs;
+
+		// Vertex shader uniform buffer block
+		VkBufferCreateInfo bufferInfo{};
+		VkMemoryAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.allocationSize = 0;
+		allocInfo.memoryTypeIndex = 0;
+
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferInfo.size = sizeof(ShaderData);
+		// This buffer will be used as a uniform buffer
+		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+		// Create the buffers
+		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
+			VK_CHECK_RESULT(vkCreateBuffer(_vulkanDevice->getLogicalDevice(), &bufferInfo, nullptr, &_uniformBuffers[i].buffer));
+			// Get memory requirements including size, alignment and memory type
+			vkGetBufferMemoryRequirements(_vulkanDevice->getLogicalDevice(), _uniformBuffers[i].buffer, &memReqs);
+			allocInfo.allocationSize = memReqs.size;
+			// Get the memory type index that supports host visible memory access
+			// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
+			// We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
+			// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
+			allocInfo.memoryTypeIndex = _vulkanDevice->get_gpu().getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			// Allocate memory for the uniform buffer
+			VK_CHECK_RESULT(vkAllocateMemory(_vulkanDevice->getLogicalDevice(), &allocInfo, nullptr, &(_uniformBuffers[i].memory)));
+			// Bind memory to buffer
+			VK_CHECK_RESULT(vkBindBufferMemory(_vulkanDevice->getLogicalDevice(), _uniformBuffers[i].buffer, _uniformBuffers[i].memory, 0));
+			// We map the buffer once, so we can update it without having to map it again
+			VK_CHECK_RESULT(vkMapMemory(_vulkanDevice->getLogicalDevice(), _uniformBuffers[i].memory, 0, sizeof(ShaderData), 0, (void**)&_uniformBuffers[i].mapped));
+		}
+	}
+
+	void VulkanRenderer::updateUniformBuffer()
+	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+		ShaderData ubo{};
+		ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubo.modelMatrix = glm::mat4(1.0f);
+
+		ubo.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubo.viewMatrix = glm::mat4(1.0f);
+
+		ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		//ubo.projectionMatrix = glm::mat4(1.0f);
+
+
+		ubo.projectionMatrix[1][1] *= -1;
+		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
+	}
+
+	// Descriptors are allocated from a pool, that tells the implementation how many and what types of descriptors we are going to use (at maximum)
+	void VulkanRenderer::createDescriptorPool()
+	{
+		// We need to tell the API the number of max. requested descriptors per type
+		VkDescriptorPoolSize descriptorTypeCounts[1];
+		// This example only one descriptor type (uniform buffer)
+		descriptorTypeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		// We have one buffer (and as such descriptor) per frame
+		descriptorTypeCounts[0].descriptorCount = MAX_CONCURRENT_FRAMES;
+		// For additional types you need to add new entries in the type count list
+		// E.g. for two combined image samplers :
+		// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		// typeCounts[1].descriptorCount = 2;
+
+		// Create the global descriptor pool
+		// All descriptors used in this example are allocated from this pool
+		VkDescriptorPoolCreateInfo descriptorPoolCI{};
+		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+		descriptorPoolCI.pNext = nullptr;
+		descriptorPoolCI.poolSizeCount = 1;
+		descriptorPoolCI.pPoolSizes = descriptorTypeCounts;
+		// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
+		// Our sample will create one set per uniform buffer per frame
+		descriptorPoolCI.maxSets = MAX_CONCURRENT_FRAMES;
+		VK_CHECK_RESULT(vkCreateDescriptorPool(_vulkanDevice->getLogicalDevice(), &descriptorPoolCI, nullptr, &_basicDescriptorPool));
+
+	}
+
+	// Shaders access data using descriptor sets that "point" at our uniform buffers
+	// The descriptor sets make use of the descriptor set layouts created above 
+	void VulkanRenderer::createDescriptorSets()
+	{
+		// Allocate one descriptor set per frame from the global descriptor pool
+		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
+			VkDescriptorSetAllocateInfo allocInfo{};
+			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+			allocInfo.descriptorPool = _basicDescriptorPool;
+			allocInfo.descriptorSetCount = 1;
+			allocInfo.pSetLayouts = &_basicDescriptorSetLayout;
+			VK_CHECK_RESULT(vkAllocateDescriptorSets(_vulkanDevice->getLogicalDevice(), &allocInfo, &_uniformBuffers[i].descriptorSet));
+
+			// Update the descriptor set determining the shader binding points
+			// For every binding point used in a shader there needs to be one
+			// descriptor set matching that binding point
+			VkWriteDescriptorSet writeDescriptorSet{};
+
+			// The buffer's information is passed using a descriptor info structure
+			VkDescriptorBufferInfo bufferInfo{};
+			bufferInfo.buffer = _uniformBuffers[i].buffer;
+			bufferInfo.range = sizeof(ShaderData);
+
+			// Binding 0 : Uniform buffer
+			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSet.dstSet = _uniformBuffers[i].descriptorSet;
+			writeDescriptorSet.descriptorCount = 1;
+			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			writeDescriptorSet.pBufferInfo = &bufferInfo;
+			writeDescriptorSet.dstBinding = 0;
+			vkUpdateDescriptorSets(_vulkanDevice->getLogicalDevice(), 1, &writeDescriptorSet, 0, nullptr);
+		}
 	}
 
 }

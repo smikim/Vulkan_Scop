@@ -25,16 +25,16 @@ namespace vks
 		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &_VertexBuffer.buffer, offsets);
 		// Bind triangle index buffer
 
-		//vkCmdBindIndexBuffer(commandBuffer, _IndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdBindIndexBuffer(commandBuffer, _IndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 	}
 
 	void VulkanModel::draw(VkCommandBuffer commandBuffer)
 	{
 		// Draw indexed triangle
-		//vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 1);
+		vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 1);
 
 		// TODO
-		vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
+		//vkCmdDraw(commandBuffer, vertexCount, 1, 0, 0);
 	}
 
 	void VulkanModel::draw(VkCommandBuffer commandBuffer, VkPipelineLayout pipelineLayout)
@@ -60,13 +60,18 @@ namespace vks
 			{ { 0.5f,  0.5f, 0.0f }, { 0.0f, 1.0f, 0.0f } },
 			{ {  -0.5f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
 		};*/
-
-		_Vertices = {
-			{{0.0f, -0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}},
-			{{0.5f, 0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-			{{-0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}}
-		};
 		
+		_Vertices = {
+			{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+			{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+			{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+			{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+		};
+
+		_Indices = {
+			0, 1, 2, 2, 3, 0
+		};
+
 		uint32_t vertexBufferSize = static_cast<uint32_t>(_Vertices.size()) * sizeof(Vertex);
 		vertexCount = _Vertices.size();
 
@@ -84,19 +89,19 @@ namespace vks
 
 		// Host visible source buffers (staging)
 		VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffers.vertices, vertexBufferSize, _Vertices.data()));
-		//VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffers.indices, _Indices.size() * sizeof(uint32_t), _Indices.data()));
+		VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffers.indices, _Indices.size() * sizeof(uint32_t), _Indices.data()));
 
 		// Device local destination buffers
 		VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_VertexBuffer, _Vertices.size() * sizeof(Vertex)));
-		//VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_IndexBuffer, _Indices.size() * sizeof(uint32_t)));
+		VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_IndexBuffer, _Indices.size() * sizeof(uint32_t)));
 
 		// Copy from host do device
 		_Device.copyBuffer(&stagingBuffers.vertices, &_VertexBuffer, queue);
-		//_Device.copyBuffer(&stagingBuffers.indices, &_IndexBuffer, queue);
+		_Device.copyBuffer(&stagingBuffers.indices, &_IndexBuffer, queue);
 
 		// Clean up
 		stagingBuffers.vertices.destroy();
-		//stagingBuffers.indices.destroy();
+		stagingBuffers.indices.destroy();
 
 	}
 

@@ -17,6 +17,7 @@ namespace scop
 
 			glfwPollEvents();
 
+			_renderer.updateUniformBuffer();
 			render();
 		}
 

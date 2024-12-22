@@ -8,6 +8,12 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanModel.h"
 
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
+
 #include <vector>
 
 #define MAX_CONCURRENT_FRAMES 2
@@ -19,6 +25,37 @@ namespace vks
 	class VulkanRenderer
 	{
 	public:
+
+		// Uniform buffer block object
+		struct UniformBuffer {
+			VkDeviceMemory memory;
+			VkBuffer buffer;
+			// The descriptor set stores the resources bound to the binding points in a shader
+			// It connects the binding points of the different shaders with the buffers and images used for those bindings
+			VkDescriptorSet descriptorSet;
+			// We keep a pointer to the mapped buffer, so we can easily update it's contents via a memcpy
+			uint8_t* mapped{ nullptr };
+		};
+		// We use one UBO per frame, so we can have a frame overlap and make sure that uniforms aren't updated while still in use
+		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> _uniformBuffers;
+
+		// For simplicity we use the same uniform block layout as in the shader:
+		//
+		//	layout(set = 0, binding = 0) uniform UBO
+		//	{
+		//		mat4 projectionMatrix;
+		//		mat4 modelMatrix;
+		//		mat4 viewMatrix;
+		//	} ubo;
+		//
+		// This way we can just memcopy the ubo data to the ubo
+		// Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
+		struct ShaderData {
+			glm::mat4 modelMatrix;
+			glm::mat4 viewMatrix;
+			glm::mat4 projectionMatrix;
+		}; 
+		
 		VulkanRenderer(GlfwWindow& window);
 		~VulkanRenderer();
 
@@ -47,6 +84,11 @@ namespace vks
 		vks::VulkanDevice* getVulkanDevice() const {
 			return _vulkanDevice;
 		}
+
+		float getAspectRatio() { return static_cast<float>(_width) / static_cast<float>(_height); };
+
+		// TODO
+		void updateUniformBuffer();
 
 		Graphics::BasicPSO* _basicPSO;
 		VulkanPipeline* _basicPipeline;
@@ -80,6 +122,12 @@ namespace vks
 
 		VkResult submitCommandBuffer();
 		void windowResize();
+
+		void createDescriptorSetLayout();
+		void createUniformBuffers();
+		
+		void createDescriptorPool();
+		void createDescriptorSets();
 
 		uint32_t _width;
 		uint32_t _height;
@@ -133,7 +181,11 @@ namespace vks
 		// Command buffers used for rendering
 		VulkanCommandBuffer* _drawCommandBuffer;
 
+		VkDescriptorSetLayout _basicDescriptorSetLayout{ VK_NULL_HANDLE };
+		VkDescriptorPool _basicDescriptorPool{ VK_NULL_HANDLE };
 		// TODO 
 		VulkanModel *_model;
+
+
 	};
 }
