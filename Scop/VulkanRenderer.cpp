@@ -46,6 +46,7 @@ namespace vks
 
 		vkDestroyCommandPool(_vulkanDevice->getLogicalDevice(), _CmdPool, nullptr);
 
+		delete _model;
 		delete _vulkanDevice;
 	}
 
@@ -85,6 +86,11 @@ namespace vks
 		init_basicPipeline(_basicPSO, _basicPipelineLayout);
 
 		_prepared = true;
+
+		// TODO 
+		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
+		_model = new VulkanModel(*_vulkanDevice);
+		_model->createVertexBuffer(queue.get_queue());
 
 		return true;
 	}
@@ -150,7 +156,9 @@ namespace vks
 
 			_basicPipeline->bind(commandBuffer);
 
-			vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+			_model->bind(commandBuffer);
+			_model->draw(commandBuffer);
+			//vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
 			//VkDeviceSize offsets[1] = { 0 };
 			//vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer.buffer, offsets);

@@ -37,7 +37,7 @@ namespace vks
 	void VulkanCommandBuffer::begin_renderpass(VkCommandBuffer commandBuffer, VkFramebuffer framebuffer,
 		VkRenderPass renderpass, uint32_t width, uint32_t height, std::vector<VkClearValue>& clearValues)
 	{
-		std::cout << renderpass << std::endl;
+		//std::cout << renderpass << std::endl;
 
 		/*VkClearValue clearValues[2];
 		clearValues[0].color = { { 0.25f, 0.25f, 0.25f, 1.0f } };;

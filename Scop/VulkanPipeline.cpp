@@ -19,17 +19,17 @@ namespace vks {
 		VkPipelineVertexInputStateCreateInfo vertex_input_state{ VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
 
 		// TODO
-		/*vertex_input_state.pVertexAttributeDescriptions = pipelineState.get_vertex_input_state().attributes.data();
+		vertex_input_state.pVertexAttributeDescriptions = pipelineState.get_vertex_input_state().attributes.data();
 		vertex_input_state.vertexAttributeDescriptionCount = to_u32(pipelineState.get_vertex_input_state().attributes.size());
 
 		vertex_input_state.pVertexBindingDescriptions = pipelineState.get_vertex_input_state().bindings.data();
-		vertex_input_state.vertexBindingDescriptionCount = to_u32(pipelineState.get_vertex_input_state().bindings.size());*/
+		vertex_input_state.vertexBindingDescriptionCount = to_u32(pipelineState.get_vertex_input_state().bindings.size());
 
-		vertex_input_state.pVertexAttributeDescriptions = nullptr;
+		/*vertex_input_state.pVertexAttributeDescriptions = nullptr;
 		vertex_input_state.vertexAttributeDescriptionCount = 0;
 
 		vertex_input_state.pVertexBindingDescriptions = nullptr;
-		vertex_input_state.vertexBindingDescriptionCount = 0;
+		vertex_input_state.vertexBindingDescriptionCount = 0;*/
 
 
 

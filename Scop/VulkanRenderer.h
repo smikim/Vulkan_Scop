@@ -6,6 +6,7 @@
 #include "BasicPSO.h"
 #include "VulkanPipelineState.h"
 #include "VulkanCommandBuffer.h"
+#include "VulkanModel.h"
 
 #include <vector>
 
@@ -50,6 +51,8 @@ namespace vks
 		Graphics::BasicPSO* _basicPSO;
 		VulkanPipeline* _basicPipeline;
 		VkPipelineLayout _basicPipelineLayout{ VK_NULL_HANDLE };
+
+		
 
 	private:
 		// TODO
@@ -129,5 +132,8 @@ namespace vks
 
 		// Command buffers used for rendering
 		VulkanCommandBuffer* _drawCommandBuffer;
+
+		// TODO 
+		VulkanModel *_model;
 	};
 }

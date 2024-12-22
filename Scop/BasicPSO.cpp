@@ -1,4 +1,5 @@
 #include "BasicPSO.h"
+#include "VulkanModel.h"
 
 namespace Graphics
 {
@@ -42,10 +43,10 @@ namespace Graphics
 		_pipelineState.set_multisample_state(MultiSampleState);
 
 		vks::VertexInputState VIState;
-		//VIState.bindings = vks::VulkanModel::Vertex::getBindingDescription();
+		VIState.bindings = vks::VulkanModel::Vertex::getBindingDescription();
 		
 		
-		//VIState.attributes = vks::VulkanModel::Vertex::getAttributeDescription();
+		VIState.attributes = vks::VulkanModel::Vertex::getAttributeDescription();
 		//VIState.attributes = nullptr;
 
 		_pipelineState.set_vertex_input_state(VIState);

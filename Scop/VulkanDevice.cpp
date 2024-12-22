@@ -1,5 +1,7 @@
 #include "VulkanDevice.h"
 #include "helpers.h"
+#include "VulkanInitializers.h"
+
 
 namespace vks
 {
@@ -132,12 +134,13 @@ namespace vks
 
 		create_graphics_queue(surface);
 
-		std::cout << "device command pool" << std::endl;
+		//std::cout << "device command pool" << std::endl;
 	
 		// Create a default command pool for graphics command buffers
 		_CommandPool = createCommandPool(get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT, 0).get_family_index());
-		std::cout << _CommandPool << std::endl;
-		std::cout << "device command pool" << std::endl;
+		
+		//std::cout << _CommandPool << std::endl;
+		//std::cout << "device command pool" << std::endl;
 		return result;
 
 	}
@@ -275,6 +278,124 @@ namespace vks
 	VkCommandPool VulkanDevice::get_command_pool() const
 	{
 		return _CommandPool;
+	}
+
+	VkResult VulkanDevice::createBuffer(VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryPropertyFlags, vks::Buffer* buffer, VkDeviceSize size, void* data)
+	{
+		buffer->device = _LogicalDevice;
+
+		// Create the buffer handle
+		VkBufferCreateInfo bufferCreateInfo = vks::initializers::bufferCreateInfo(usageFlags, size);
+		VK_CHECK_RESULT(vkCreateBuffer(_LogicalDevice, &bufferCreateInfo, nullptr, &buffer->buffer));
+
+		// Create the memory backing up the buffer handle
+		VkMemoryRequirements memReqs;
+		VkMemoryAllocateInfo memAlloc = vks::initializers::memoryAllocateInfo();
+		vkGetBufferMemoryRequirements(_LogicalDevice, buffer->buffer, &memReqs);
+		memAlloc.allocationSize = memReqs.size;
+		// Find a memory type index that fits the properties of the buffer
+		memAlloc.memoryTypeIndex = _gpu.getMemoryType(memReqs.memoryTypeBits, memoryPropertyFlags);
+		// If the buffer has VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT set we also need to enable the appropriate flag during allocation
+		VkMemoryAllocateFlagsInfoKHR allocFlagsInfo{};
+		if (usageFlags & VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT) {
+			allocFlagsInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_FLAGS_INFO_KHR;
+			allocFlagsInfo.flags = VK_MEMORY_ALLOCATE_DEVICE_ADDRESS_BIT_KHR;
+			memAlloc.pNext = &allocFlagsInfo;
+		}
+		VK_CHECK_RESULT(vkAllocateMemory(_LogicalDevice, &memAlloc, nullptr, &buffer->memory));
+
+		buffer->alignment = memReqs.alignment;
+		buffer->size = size;
+		buffer->usageFlags = usageFlags;
+		buffer->memoryPropertyFlags = memoryPropertyFlags;
+
+		// If a pointer to the buffer data has been passed, map the buffer and copy over the data
+		if (data != nullptr)
+		{
+			VK_CHECK_RESULT(buffer->map());
+			memcpy(buffer->mapped, data, size);
+			if ((memoryPropertyFlags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0)
+				buffer->flush();
+
+			buffer->unmap();
+		}
+
+		// Initialize a default descriptor that covers the whole buffer size
+		buffer->setupDescriptor();
+
+		// Attach the memory to the buffer object
+		return buffer->bind();
+	}
+
+	void VulkanDevice::copyBuffer(vks::Buffer* src, vks::Buffer* dst, VkQueue queue, VkBufferCopy* copyRegion)
+	{
+		assert(dst->size <= src->size);
+		assert(src->buffer);
+		VkCommandBuffer copyCmd = createCommandBuffer(VK_COMMAND_BUFFER_LEVEL_PRIMARY, true);
+		VkBufferCopy bufferCopy{};
+		if (copyRegion == nullptr)
+		{
+			bufferCopy.size = src->size;
+		}
+		else
+		{
+			bufferCopy = *copyRegion;
+		}
+
+		vkCmdCopyBuffer(copyCmd, src->buffer, dst->buffer, 1, &bufferCopy);
+
+		flushCommandBuffer(copyCmd, queue);
+	}
+
+	VkCommandBuffer VulkanDevice::createCommandBuffer(VkCommandBufferLevel level, VkCommandPool pool, bool begin)
+	{
+		VkCommandBufferAllocateInfo cmdBufAllocateInfo = vks::initializers::commandBufferAllocateInfo(pool, level, 1);
+		VkCommandBuffer cmdBuffer;
+		VK_CHECK_RESULT(vkAllocateCommandBuffers(_LogicalDevice, &cmdBufAllocateInfo, &cmdBuffer));
+		// If requested, also start recording for the new command buffer
+		if (begin)
+		{
+			VkCommandBufferBeginInfo cmdBufInfo = vks::initializers::commandBufferBeginInfo();
+			VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+		}
+		return cmdBuffer;
+	}
+
+	VkCommandBuffer VulkanDevice::createCommandBuffer(VkCommandBufferLevel level, bool begin)
+	{
+		return createCommandBuffer(level, _CommandPool, begin);
+	}
+
+	void VulkanDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, VkCommandPool pool, bool free)
+	{
+		if (commandBuffer == VK_NULL_HANDLE)
+		{
+			return;
+		}
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+		VkSubmitInfo submitInfo = vks::initializers::submitInfo();
+		submitInfo.commandBufferCount = 1;
+		submitInfo.pCommandBuffers = &commandBuffer;
+		// Create fence to ensure that the command buffer has finished executing
+		VkFenceCreateInfo fenceInfo = vks::initializers::fenceCreateInfo(VK_FLAGS_NONE);
+		VkFence fence;
+		VK_CHECK_RESULT(vkCreateFence(_LogicalDevice, &fenceInfo, nullptr, &fence));
+		// Submit to the queue
+		VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+		// Wait for the fence to signal that command buffer has finished executing
+		VK_CHECK_RESULT(vkWaitForFences(_LogicalDevice, 1, &fence, VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+		vkDestroyFence(_LogicalDevice, fence, nullptr);
+		if (free)
+		{
+			vkFreeCommandBuffers(_LogicalDevice, pool, 1, &commandBuffer);
+		}
+	}
+
+	void VulkanDevice::flushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue, bool free)
+	{
+		return flushCommandBuffer(commandBuffer, queue, _CommandPool, free);
 	}
 
 	VkCommandPool VulkanDevice::createCommandPool(uint32_t queueFamilyIndex, VkCommandPoolCreateFlags createFlags)

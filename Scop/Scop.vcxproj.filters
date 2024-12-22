@@ -72,6 +72,12 @@
     <ClCompile Include="VulkanCommandBuffer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanModel.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanBuffer.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scop.h">
@@ -125,6 +131,12 @@
     <ClInclude Include="VulkanCommandBuffer.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanModel.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanBuffer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -132,10 +144,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\shaders\shader.frag">
+    <None Include="shaders\shader.frag">
       <Filter>shader</Filter>
     </None>
-    <None Include="..\shaders\shader.vert">
+    <None Include="shaders\shader.vert">
       <Filter>shader</Filter>
     </None>
   </ItemGroup>
