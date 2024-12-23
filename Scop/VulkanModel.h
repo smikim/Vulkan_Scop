@@ -10,7 +10,7 @@ namespace vks
 		struct Vertex {
 			float position[3];
 			float color[3];
-	
+			float uv[2];
 
 			static std::vector<VkVertexInputBindingDescription> getBindingDescription();
 			static std::vector<VkVertexInputAttributeDescription> getAttributeDescription();

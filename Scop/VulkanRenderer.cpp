@@ -49,6 +49,7 @@ namespace vks
 
 		vkDestroyCommandPool(_vulkanDevice->getLogicalDevice(), _CmdPool, nullptr);
 
+		delete _texture;
 		delete _model;
 		delete _vulkanDevice;
 	}
@@ -86,6 +87,11 @@ namespace vks
 
 		_basicPSO = new Graphics::BasicPSO(*_vulkanDevice, _RenderPass);
 		
+		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
+
+		std::string filename{ "textures/lena.bmp" };
+		_texture = new VulkanTexture(filename, queue.get_queue(), _vulkanDevice);
+
 		createUniformBuffers();
 		createDescriptorSetLayout();
 		createDescriptorPool();
@@ -100,10 +106,12 @@ namespace vks
 		_prepared = true;
 
 		// TODO 
-		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
+		
 		_model = new VulkanModel(*_vulkanDevice);
 		_model->createVertexBuffer(queue.get_queue());
 
+		
+		
 		return true;
 	}
 
@@ -204,7 +212,6 @@ namespace vks
 		auto result = _swapChain->acquireNextImage(_WaitFences[_currentFrame], _PresentCompleteSemaphores[_currentFrame], &_currentImageIndex);
 
 		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-			// TODO
 			_window.resetWindowResizedFlag();
 			windowResize();
 			std::cout << "beginFrame(): return nullptr" << std::endl;
@@ -544,18 +551,30 @@ namespace vks
 
 	void VulkanRenderer::createDescriptorSetLayout()
 	{
+		std::array<VkDescriptorSetLayoutBinding, 2> setLayoutBindings{};
+
 		// Binding 0: Uniform buffer (Vertex shader)
-		VkDescriptorSetLayoutBinding layoutBinding{};
-		layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		layoutBinding.descriptorCount = 1;
-		layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-		layoutBinding.pImmutableSamplers = nullptr;
+		setLayoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		setLayoutBindings[0].binding = 0;
+		setLayoutBindings[0].descriptorCount = 1;
+		setLayoutBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		setLayoutBindings[0].pImmutableSamplers = nullptr;
+
+		/*
+			Binding 1: Combined image sampler (used to pass per object texture information)
+		*/
+		setLayoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		setLayoutBindings[1].binding = 1;
+		// Accessible from the fragment shader only
+		setLayoutBindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		setLayoutBindings[1].descriptorCount = 1;
+		setLayoutBindings[1].pImmutableSamplers = nullptr;
 
 		VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
 		descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		descriptorLayoutCI.pNext = nullptr;
-		descriptorLayoutCI.bindingCount = 1;
-		descriptorLayoutCI.pBindings = &layoutBinding;
+		descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
+		descriptorLayoutCI.pBindings = setLayoutBindings.data();
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(_vulkanDevice->getLogicalDevice(), &descriptorLayoutCI, nullptr, &_basicDescriptorSetLayout));
 	}
 
@@ -623,12 +642,20 @@ namespace vks
 	// Descriptors are allocated from a pool, that tells the implementation how many and what types of descriptors we are going to use (at maximum)
 	void VulkanRenderer::createDescriptorPool()
 	{
+		std::array<VkDescriptorPoolSize, 2> descriptorPoolSizes{};
+
 		// We need to tell the API the number of max. requested descriptors per type
-		VkDescriptorPoolSize descriptorTypeCounts[1];
+		
 		// This example only one descriptor type (uniform buffer)
-		descriptorTypeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		// We have one buffer (and as such descriptor) per frame
-		descriptorTypeCounts[0].descriptorCount = MAX_CONCURRENT_FRAMES;
+		descriptorPoolSizes[0].descriptorCount = MAX_CONCURRENT_FRAMES;
+
+		// Combined image samples : 1 per object texture
+		descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorPoolSizes[1].descriptorCount = MAX_CONCURRENT_FRAMES;
+
+
 		// For additional types you need to add new entries in the type count list
 		// E.g. for two combined image samplers :
 		// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -639,8 +666,8 @@ namespace vks
 		VkDescriptorPoolCreateInfo descriptorPoolCI{};
 		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		descriptorPoolCI.pNext = nullptr;
-		descriptorPoolCI.poolSizeCount = 1;
-		descriptorPoolCI.pPoolSizes = descriptorTypeCounts;
+		descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
+		descriptorPoolCI.pPoolSizes = descriptorPoolSizes.data();
 		// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
 		// Our sample will create one set per uniform buffer per frame
 		descriptorPoolCI.maxSets = MAX_CONCURRENT_FRAMES;
@@ -665,20 +692,42 @@ namespace vks
 			// For every binding point used in a shader there needs to be one
 			// descriptor set matching that binding point
 			VkWriteDescriptorSet writeDescriptorSet{};
+			std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
 
 			// The buffer's information is passed using a descriptor info structure
 			VkDescriptorBufferInfo bufferInfo{};
 			bufferInfo.buffer = _uniformBuffers[i].buffer;
 			bufferInfo.range = sizeof(ShaderData);
 
+			// Setup a descriptor image info for the current texture to be used as a combined image sampler
+			VkDescriptorImageInfo textureDescriptor;
+			// The image's view (images are never directly accessed by the shader, but rather through views defining subresources)
+			textureDescriptor.imageView = _texture->_TextureImageView;
+			// The sampler (Telling the pipeline how to sample the texture, including repeat, border, etc.)
+			textureDescriptor.sampler = _texture->_TextureSampler;
+			// The current layout of the image(Note: Should always fit the actual use, e.g.shader read)
+			textureDescriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
 			// Binding 0 : Uniform buffer
-			writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSet.dstSet = _uniformBuffers[i].descriptorSet;
-			writeDescriptorSet.descriptorCount = 1;
-			writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeDescriptorSet.pBufferInfo = &bufferInfo;
-			writeDescriptorSet.dstBinding = 0;
-			vkUpdateDescriptorSets(_vulkanDevice->getLogicalDevice(), 1, &writeDescriptorSet, 0, nullptr);
+			writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSets[0].dstSet = _uniformBuffers[i].descriptorSet;
+			writeDescriptorSets[0].descriptorCount = 1;
+			writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			writeDescriptorSets[0].pBufferInfo = &bufferInfo;
+			writeDescriptorSets[0].dstBinding = 0;
+
+			/*
+				Binding 1: Object texture
+			*/
+			writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+			writeDescriptorSets[1].dstSet = _uniformBuffers[i].descriptorSet;
+			writeDescriptorSets[1].dstBinding = 1;
+			writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			// Images use a different descriptor structure, so we use pImageInfo instead of pBufferInfo
+			writeDescriptorSets[1].pImageInfo = &textureDescriptor;
+			writeDescriptorSets[1].descriptorCount = 1;
+
+			vkUpdateDescriptorSets(_vulkanDevice->getLogicalDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 		}
 	}
 

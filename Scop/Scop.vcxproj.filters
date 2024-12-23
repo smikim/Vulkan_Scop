@@ -78,6 +78,9 @@
     <ClCompile Include="VulkanBuffer.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanTexture.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Scop.h">
@@ -135,6 +138,9 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="VulkanBuffer.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanTexture.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

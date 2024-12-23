@@ -7,6 +7,7 @@
 #include "VulkanPipelineState.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanModel.h"
+#include "VulkanTexture.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -185,7 +186,7 @@ namespace vks
 		VkDescriptorPool _basicDescriptorPool{ VK_NULL_HANDLE };
 		// TODO 
 		VulkanModel *_model;
-
+		VulkanTexture* _texture;
 
 	};
 }

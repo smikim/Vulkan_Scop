@@ -12,7 +12,7 @@ namespace vks
 
 		// TODO
 		if (_DeviceFeatures.samplerAnisotropy) {
-			//requested_features.samplerAnisotropy = VK_TRUE;
+			_requested_features.samplerAnisotropy = VK_TRUE;
 		};
 
 
