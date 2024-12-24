@@ -22,6 +22,9 @@
     <Filter Include="shader">
       <UniqueIdentifier>{ce81fb46-594d-408b-b7fb-ff23c501159d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="library">
+      <UniqueIdentifier>{dbeedee5-cff8-4ae8-9e81-bb3f670877ee}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -80,6 +83,9 @@
     </ClCompile>
     <ClCompile Include="VulkanTexture.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="BmpLoader.cpp">
+      <Filter>library</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -142,6 +148,12 @@
     </ClInclude>
     <ClInclude Include="VulkanTexture.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BmpLoader.h">
+      <Filter>library</Filter>
+    </ClInclude>
+    <ClInclude Include="tmpLoader.h">
+      <Filter>library</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

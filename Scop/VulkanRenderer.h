@@ -8,8 +8,10 @@
 #include "VulkanCommandBuffer.h"
 #include "VulkanModel.h"
 #include "VulkanTexture.h"
+#include "BmpLoader.h"
 
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -130,6 +132,8 @@ namespace vks
 		void createDescriptorPool();
 		void createDescriptorSets();
 
+		void loadTexture();
+
 		uint32_t _width;
 		uint32_t _height;
 		
@@ -187,6 +191,6 @@ namespace vks
 		// TODO 
 		VulkanModel *_model;
 		VulkanTexture* _texture;
-
+		BmpLoader* _bmpLoader;
 	};
 }

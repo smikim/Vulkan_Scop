@@ -89,7 +89,19 @@ namespace vks
 		
 		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
 
+		// TODO
+		// loadTexture();
+
 		std::string filename{ "textures/lena.bmp" };
+		
+		//std::string filename{ "textures/sample.bmp" };
+		
+		//std::string filename{ "textures/640-480-sample.bmp" };
+		//std::string filename{ "textures/blackbuck.bmp" };
+		//std::string filename{ "textures/bmp_24.bmp" };
+		
+		//std::string filename{ "textures/dots.bmp" };
+
 		_texture = new VulkanTexture(filename, queue.get_queue(), _vulkanDevice);
 
 		createUniformBuffers();
@@ -729,6 +741,16 @@ namespace vks
 
 			vkUpdateDescriptorSets(_vulkanDevice->getLogicalDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 		}
+	}
+
+	void VulkanRenderer::loadTexture()
+	{
+		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
+
+
+		std::string filename{ "textures/lena.bmp" };
+		_texture = new VulkanTexture(filename, queue.get_queue(), _vulkanDevice);
+
 	}
 
 }

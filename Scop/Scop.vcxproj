@@ -134,6 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BasicPSO.cpp" />
+    <ClCompile Include="BmpLoader.cpp" />
     <ClCompile Include="GlfwWindow.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Scop.cpp" />
@@ -155,9 +156,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicPSO.h" />
+    <ClInclude Include="BmpLoader.h" />
     <ClInclude Include="GlfwWindow.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="Scop.h" />
+    <ClInclude Include="tmpLoader.h" />
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="VulkanCommandBuffer.h" />
     <ClInclude Include="VulkanDebug.h" />

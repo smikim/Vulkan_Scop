@@ -1,7 +1,11 @@
 #include "VulkanTexture.h"
+#include "BmpLoader.h"
+#include "tmpLoader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+// 이미지 로드 전에 수직 반전 설정
+
 
 namespace vks
 {
@@ -20,13 +24,33 @@ namespace vks
 
 	void VulkanTexture::createTextureImage(VkQueue copyQueue, vks::VulkanDevice* vulkanDevice)
 	{
-		int texWidth, texHeight, texChannels;
-		stbi_uc* pixels = stbi_load(_filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-		VkDeviceSize imageSize = texWidth * texHeight * 4;
+		//BMP my_loader = BMP(_filename.c_str());
 
-		if (!pixels) {
+		int texWidth, texHeight, texChannels;
+		//stbi_set_flip_vertically_on_load(true);
+		//stbi_uc* pixels = stbi_load(_filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+		
+		BmpLoader bmpLoader;
+		std::vector<uint8_t> imageData;
+		bmpLoader.readFile(_filename);
+		bmpLoader.processImage(imageData);
+
+		texWidth = bmpLoader.infoHeader.btWidth;
+		texHeight = bmpLoader.infoHeader.btHeight;
+
+		//texWidth = my_loader.info_header.width;
+		//texHeight = my_loader.info_header.height;
+
+		VkDeviceSize imageSize = texWidth * texHeight * 4;
+		//VkDeviceSize imageSize = bmpLoader.infoHeader.btWidth * bmpLoader.infoHeader.btHeight * 4;
+
+		/*if (!pixels) {
 			throw std::runtime_error("failed to load texture image!");
-		}
+		}*/
+
+		/*if (!bmpLoader.data) {
+			throw std::runtime_error("failed to load texture image!");
+		}*/
 
 		this->_vulkanDevice = vulkanDevice;
 
@@ -63,16 +87,22 @@ namespace vks
 
 		void* data;
 		vkMapMemory(vulkanDevice->getLogicalDevice(), stagingBufferMemory, 0, imageSize, 0, &data);
-		memcpy(data, pixels, static_cast<size_t>(imageSize));
+		//memcpy(data, pixels, static_cast<size_t>(imageSize));
+		// TODO
+		memcpy(data, imageData.data(), imageData.size());
+		//memcpy(data, bmpLoader.data.get(), static_cast<size_t>(imageSize));
+		
 		vkUnmapMemory(vulkanDevice->getLogicalDevice(), stagingBufferMemory);
 
-		stbi_image_free(pixels);
+		//stbi_image_free(pixels);
 
 		VkImageCreateInfo imageInfo{};
 		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 		imageInfo.imageType = VK_IMAGE_TYPE_2D;
 		imageInfo.extent.width = static_cast<uint32_t>(texWidth);
+		//imageInfo.extent.width = static_cast<uint32_t>(bmpLoader.infoHeader.btWidth);
 		imageInfo.extent.height = static_cast<uint32_t>(texHeight);
+		//imageInfo.extent.height = static_cast<uint32_t>(bmpLoader.infoHeader.btHeight);
 		imageInfo.extent.depth = 1;
 		imageInfo.mipLevels = 1;
 		imageInfo.arrayLayers = 1;
@@ -122,7 +152,9 @@ namespace vks
 		region.imageOffset = { 0, 0, 0 };
 		region.imageExtent = {
 			static_cast<uint32_t>(texWidth),
+			//static_cast<uint32_t>(bmpLoader.infoHeader.btWidth),
 			static_cast<uint32_t>(texHeight),
+			//static_cast<uint32_t>(bmpLoader.infoHeader.btHeight),
 			1
 		};
 
