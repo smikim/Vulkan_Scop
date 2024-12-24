@@ -152,9 +152,6 @@
     <ClInclude Include="BmpLoader.h">
       <Filter>library</Filter>
     </ClInclude>
-    <ClInclude Include="tmpLoader.h">
-      <Filter>library</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
