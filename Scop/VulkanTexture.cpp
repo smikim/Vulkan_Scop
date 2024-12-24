@@ -1,6 +1,5 @@
 #include "VulkanTexture.h"
 #include "BmpLoader.h"
-#include "tmpLoader.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
@@ -24,8 +23,6 @@ namespace vks
 
 	void VulkanTexture::createTextureImage(VkQueue copyQueue, vks::VulkanDevice* vulkanDevice)
 	{
-		//BMP my_loader = BMP(_filename.c_str());
-
 		int texWidth, texHeight, texChannels;
 		//stbi_set_flip_vertically_on_load(true);
 		//stbi_uc* pixels = stbi_load(_filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
