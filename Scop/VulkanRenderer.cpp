@@ -1,6 +1,6 @@
 #include "VulkanRenderer.h"
 #include "VulkanTools.h"
-
+#include <glm/gtc/type_ptr.hpp>
 namespace vks
 {
 	VulkanRenderer::VulkanRenderer(GlfwWindow& window)
@@ -122,8 +122,23 @@ namespace vks
 		_model = new VulkanModel(*_vulkanDevice);
 		_model->createVertexBuffer(queue.get_queue());
 
+		_camera.setPerspectiveProjection(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		_camera.setViewTarget(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 		
-		
+		glm::mat4 cameraView = _camera.getView();
+		std::cout << "---- cameraView -----" << std::endl;
+		const float* pSource1 = (const float*)glm::value_ptr(cameraView);
+		for (int i = 0; i < 16; ++i) {
+			std::cout << pSource1[i] << " ";
+			if ((i + 1) % 4 == 0) std::cout << std::endl;
+		}
+		std::cout << "---- cameraPer -----" << std::endl;
+		glm::mat4 cameraPer = _camera.getProjection();
+		pSource1 = (const float*)glm::value_ptr(cameraPer);
+		for (int i = 0; i < 16; ++i) {
+			std::cout << pSource1[i] << " ";
+			if ((i + 1) % 4 == 0) std::cout << std::endl;
+		}
 		return true;
 	}
 
@@ -637,17 +652,33 @@ namespace vks
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 		ShaderData ubo{};
-		ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		
+		ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), time * glm::radians(90.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
+
 		//ubo.modelMatrix = glm::mat4(1.0f);
 
-		ubo.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubo.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+		
+		ubo.viewMatrix = mymath::lookAt(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
+		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
+		
+		//ubo.viewMatrix = _camera.getView();
+
+		//ubo.viewMatrix = mymath::Mat4(1.0f);
 		//ubo.viewMatrix = glm::mat4(1.0f);
 
-		ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		//ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		//ubo.projectionMatrix = _camera.getProjection();
+		
+		ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		//ubo.projectionMatrix = mymath::perspectiveGLM(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		
+		//ubo.projectionMatrix[5] *= -1;
 		//ubo.projectionMatrix = glm::mat4(1.0f);
 
 
-		ubo.projectionMatrix[1][1] *= -1;
+		//ubo.projectionMatrix[1][1] *= -1;
 		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
 	}
 

@@ -25,6 +25,9 @@
     <Filter Include="library">
       <UniqueIdentifier>{dbeedee5-cff8-4ae8-9e81-bb3f670877ee}</UniqueIdentifier>
     </Filter>
+    <Filter Include="library\Math">
+      <UniqueIdentifier>{ca47c3f3-3a91-4810-a565-8199a72cd197}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -86,6 +89,21 @@
     </ClCompile>
     <ClCompile Include="BmpLoader.cpp">
       <Filter>library</Filter>
+    </ClCompile>
+    <ClCompile Include="Vector.cpp">
+      <Filter>library\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Matrix.cpp">
+      <Filter>library\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="math.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +169,21 @@
     </ClInclude>
     <ClInclude Include="BmpLoader.h">
       <Filter>library</Filter>
+    </ClInclude>
+    <ClInclude Include="Vector.h">
+      <Filter>library\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Matrix.h">
+      <Filter>library\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="test.h">
+      <Filter>소스 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="math.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

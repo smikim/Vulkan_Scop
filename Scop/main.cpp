@@ -2,9 +2,29 @@
 
 #include <iostream>
 
+#include "test.h"
+
+void mathTest()
+{
+   //multi_matrix();
+   //compareMat4AndGLM();
+   //testLookAt();
+   //testLookAt2();
+   //
+   //testLookAt3();
+   //comparePerspectiveFunctions();
+   testRotationFunctions();
+   //testRotationFunctions2();
+   //testScaleFunctions();
+   //testTranslateFunctions();
+}
+   
+
+
 int main() {
 
-  
+    mathTest();
+    
     scop::Scop * scop;
     try
     {

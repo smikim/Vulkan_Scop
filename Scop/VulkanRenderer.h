@@ -10,6 +10,10 @@
 #include "VulkanTexture.h"
 #include "BmpLoader.h"
 
+#include "Camera.h"
+
+#include "Matrix.h"
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
@@ -54,9 +58,14 @@ namespace vks
 		// This way we can just memcopy the ubo data to the ubo
 		// Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
 		struct ShaderData {
-			glm::mat4 modelMatrix;
-			glm::mat4 viewMatrix;
-			glm::mat4 projectionMatrix;
+			//alignas(16) glm::mat4 modelMatrix;
+			alignas(16) mymath::Mat4 modelMatrix;
+			
+			//glm::mat4 viewMatrix;
+			alignas(16) mymath::Mat4 viewMatrix;
+			
+			//alignas(16) glm::mat4 projectionMatrix;
+			alignas(16)  mymath::Mat4 projectionMatrix;
 		}; 
 		
 		VulkanRenderer(GlfwWindow& window);
@@ -88,7 +97,11 @@ namespace vks
 			return _vulkanDevice;
 		}
 
-		float getAspectRatio() { return static_cast<float>(_width) / static_cast<float>(_height); };
+		float getAspectRatio() { 
+			//std::cout << "GetAspectRaio() : " << static_cast<float>(_width) / static_cast<float>(_height) << std::endl;
+
+			return static_cast<float>(_width) / static_cast<float>(_height); 
+		};
 
 		// TODO
 		void updateUniformBuffer();
@@ -192,5 +205,7 @@ namespace vks
 		VulkanModel *_model;
 		VulkanTexture* _texture;
 		BmpLoader* _bmpLoader;
+
+		Camera _camera;
 	};
 }

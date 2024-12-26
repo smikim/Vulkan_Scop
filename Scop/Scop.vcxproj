@@ -135,9 +135,14 @@
   <ItemGroup>
     <ClCompile Include="BasicPSO.cpp" />
     <ClCompile Include="BmpLoader.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GlfwWindow.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="math.cpp" />
+    <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="Scop.cpp" />
+    <ClCompile Include="test.cpp" />
+    <ClCompile Include="Vector.cpp" />
     <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="VulkanCommandBuffer.cpp" />
     <ClCompile Include="VulkanDebug.cpp" />
@@ -157,9 +162,14 @@
   <ItemGroup>
     <ClInclude Include="BasicPSO.h" />
     <ClInclude Include="BmpLoader.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="GlfwWindow.h" />
     <ClInclude Include="helpers.h" />
+    <ClInclude Include="math.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="Scop.h" />
+    <ClInclude Include="test.h" />
+    <ClInclude Include="Vector.h" />
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="VulkanCommandBuffer.h" />
     <ClInclude Include="VulkanDebug.h" />
