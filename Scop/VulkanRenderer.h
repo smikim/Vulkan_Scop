@@ -11,6 +11,8 @@
 #include "BmpLoader.h"
 
 #include "Camera.h"
+#include "keymovement.h"
+
 
 #include "Matrix.h"
 
@@ -106,11 +108,13 @@ namespace vks
 		// TODO
 		void updateUniformBuffer();
 
+		void update();
+
 		Graphics::BasicPSO* _basicPSO;
 		VulkanPipeline* _basicPipeline;
 		VkPipelineLayout _basicPipelineLayout{ VK_NULL_HANDLE };
 
-		
+		float angles[3]{};
 
 	private:
 		// TODO

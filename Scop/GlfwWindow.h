@@ -4,6 +4,12 @@
 #include <GLFW/glfw3.h>
 
 #include <string>
+//#include "Scop.h"
+
+
+namespace scop {
+	class Scop; // Scop 클래스 전방 선언
+}
 
 class GlfwWindow
 {
@@ -24,6 +30,8 @@ public:
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 	bool wasWindowResized() { return _framebufferResized; }
 	void resetWindowResizedFlag() { _framebufferResized = false; }
+
+	static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 private:
 	void initWindow();
 

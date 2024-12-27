@@ -1,5 +1,7 @@
 #include "VulkanRenderer.h"
 #include "VulkanTools.h"
+#include "Scop.h"
+
 #include <glm/gtc/type_ptr.hpp>
 namespace vks
 {
@@ -654,13 +656,21 @@ namespace vks
 		ShaderData ubo{};
 		//ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		
-		ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), time * glm::radians(90.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
+		//ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), time * glm::radians(90.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
+		
+		ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), angles[0], mymath::Vec3(1.0f, 0.0f, 0.0f));
+		ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[1], mymath::Vec3(0.0f, 1.0f, 0.0f));
+		ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[2], mymath::Vec3(0.0f, 0.0f, 1.0f));
+
+
 
 		//ubo.modelMatrix = glm::mat4(1.0f);
 
 		//ubo.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
 		
 		ubo.viewMatrix = mymath::lookAt(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
+		
+		
 		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
 		
 		//ubo.viewMatrix = _camera.getView();
@@ -671,7 +681,7 @@ namespace vks
 		//ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
 		//ubo.projectionMatrix = _camera.getProjection();
 		
-		ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
 		//ubo.projectionMatrix = mymath::perspectiveGLM(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
 		
 		//ubo.projectionMatrix[5] *= -1;
@@ -680,6 +690,24 @@ namespace vks
 
 		//ubo.projectionMatrix[1][1] *= -1;
 		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
+	}
+
+	void VulkanRenderer::update()
+	{
+		
+		if (scop::Scop::_keymovement.moves.spin_x)
+		{
+			std::cout << true << std::endl;
+			angles[0] += 0.01;
+		}
+		else if (scop::Scop::_keymovement.moves.spin_y)
+		{
+			angles[1] += 0.01;
+		}
+		else if (scop::Scop::_keymovement.moves.spin_z)
+		{
+			angles[3] += 0.01;
+		}
 	}
 
 	// Descriptors are allocated from a pool, that tells the implementation how many and what types of descriptors we are going to use (at maximum)
