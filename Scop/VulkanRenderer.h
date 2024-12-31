@@ -60,22 +60,36 @@ namespace vks
 		// This way we can just memcopy the ubo data to the ubo
 		// Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
 		struct ShaderData {
-			//alignas(16) glm::mat4 modelMatrix;
-			alignas(16) mymath::Mat4 modelMatrix;
+			alignas(16) glm::mat4 modelMatrix;
+			//alignas(16) mymath::Mat4 modelMatrix;
 			
-			//glm::mat4 viewMatrix;
-			alignas(16) mymath::Mat4 viewMatrix;
+			glm::mat4 viewMatrix;
+			//alignas(16) mymath::Mat4 viewMatrix;
 			
-			//alignas(16) glm::mat4 projectionMatrix;
-			alignas(16)  mymath::Mat4 projectionMatrix;
+			alignas(16) glm::mat4 projectionMatrix;
+			//alignas(16)  mymath::Mat4 projectionMatrix;
 		}; 
 		
 		VulkanRenderer(GlfwWindow& window);
+		
 		~VulkanRenderer();
 
 		bool initVulkan();
+		
+		VulkanModel* CreateBasicMeshObject();
+		void BeginCreateMesh(VulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices);
+		void InsertIndexBuffer(VulkanModel* model, std::vector<uint32_t>& indices);
+		void EndCreateMesh(VulkanModel* model);
+		void DeleteMeshObject(VulkanModel* model);
+
 		void init_basicPipeline(Graphics::BasicPSO* basicPSO, VkPipelineLayout pipelineLayout);
 		
+		VkResult beginRender();
+		void beginRenderPass();
+		void endRenderPass();
+		VkResult endRender();
+		void renderMeshObject(VulkanModel* object);
+
 		void buildBasicCommandBuffers();
 		VkResult prepareFrame();
 		VkResult submitFrame();
@@ -205,6 +219,7 @@ namespace vks
 
 		VkDescriptorSetLayout _basicDescriptorSetLayout{ VK_NULL_HANDLE };
 		VkDescriptorPool _basicDescriptorPool{ VK_NULL_HANDLE };
+
 		// TODO 
 		VulkanModel *_model;
 		VulkanTexture* _texture;

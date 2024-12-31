@@ -1,16 +1,19 @@
 #include "VulkanModel.h"
 #include "VulkanTools.h"
+#include "VulkanRenderer.h"
 
 namespace vks
 {
-	VulkanModel::VulkanModel(VulkanDevice& device)
-		: _Device(device)
+	VulkanModel::VulkanModel()
 	{
 	}
 
-	VulkanModel::VulkanModel(VulkanDevice& device, std::vector<Vertex>& vertices, std::vector<uint32_t>& indices)
-		: _Device(device), _Vertices(std::move(vertices)), _Indices(std::move(indices))
+
+	bool VulkanModel::Initialize(VulkanRenderer* renderer)
 	{
+		_renderer = renderer;
+
+		return false;
 	}
 
 	VulkanModel::~VulkanModel()
@@ -42,7 +45,7 @@ namespace vks
 
 	}
 
-	void VulkanModel::createVertexBuffer(VkQueue queue)
+	void VulkanModel::createVertexBuffer(std::vector<vks::VulkanModel::Vertex>& vertices)
 	{
 		// A note on memory management in Vulkan in general:
 			//	This is a very complex topic and while it's fine for an example application to small individual memory allocations that is not
@@ -61,6 +64,7 @@ namespace vks
 			{ {  -0.5f, 0.5f, 0.0f }, { 0.0f, 0.0f, 1.0f } }
 		};*/
 		
+		/*
 		_Vertices = {
 			{{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
 			{{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
@@ -77,6 +81,9 @@ namespace vks
 			0, 1, 2, 2, 3, 0,
 			4, 5, 6, 6, 7, 4
 		};
+		*/
+		
+		_Vertices = vertices;
 
 		uint32_t vertexBufferSize = static_cast<uint32_t>(_Vertices.size()) * sizeof(Vertex);
 		vertexCount = _Vertices.size();
@@ -84,31 +91,59 @@ namespace vks
 		// Setup indices
 		//std::vector<uint32_t> indices{ 0, 1, 2 };
 
-		indexCount = static_cast<uint32_t>(_Indices.size());
-
-
+		
 		// Create buffers and upload data to the GPU
 		struct StagingBuffers {
 			vks::Buffer vertices;
 			vks::Buffer indices;
 		} stagingBuffers;
 
-		// Host visible source buffers (staging)
-		VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffers.vertices, vertexBufferSize, _Vertices.data()));
-		VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffers.indices, _Indices.size() * sizeof(uint32_t), _Indices.data()));
+		VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
 
+		// Host visible source buffers (staging)
+		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffers.vertices, vertexBufferSize, _Vertices.data()));
+		
 		// Device local destination buffers
-		VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_VertexBuffer, _Vertices.size() * sizeof(Vertex)));
-		VK_CHECK_RESULT(_Device.createBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_IndexBuffer, _Indices.size() * sizeof(uint32_t)));
+		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_VertexBuffer, _Vertices.size() * sizeof(Vertex)));
+		
+		const VulkanQueue& queue = vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
 
 		// Copy from host do device
-		_Device.copyBuffer(&stagingBuffers.vertices, &_VertexBuffer, queue);
-		_Device.copyBuffer(&stagingBuffers.indices, &_IndexBuffer, queue);
-
+		vulkanDevice->copyBuffer(&stagingBuffers.vertices, &_VertexBuffer, queue.get_queue());
+	
 		// Clean up
 		stagingBuffers.vertices.destroy();
-		stagingBuffers.indices.destroy();
+	}
 
+	void VulkanModel::createIndexBuffer(std::vector<uint32_t>& indices)
+	{
+		_Indices = indices;
+
+		indexCount = static_cast<uint32_t>(_Indices.size());
+
+		struct StagingBuffers {
+			vks::Buffer vertices;
+			vks::Buffer indices;
+		} stagingBuffers;
+
+		VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
+		// Host visible source buffers (staging)
+		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &stagingBuffers.indices, _Indices.size() * sizeof(uint32_t), _Indices.data()));
+		
+		// Device local destination buffers
+		VK_CHECK_RESULT(vulkanDevice->createBuffer(VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &_IndexBuffer, _Indices.size() * sizeof(uint32_t)));
+
+		const VulkanQueue& queue = vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
+
+		// Copy from host do device
+		vulkanDevice->copyBuffer(&stagingBuffers.indices, &_IndexBuffer, queue.get_queue());
+
+		// Clean up
+		stagingBuffers.indices.destroy();
+	}
+
+	void VulkanModel::EndCreateMesh()
+	{
 	}
 
 	std::vector<VkVertexInputBindingDescription> VulkanModel::Vertex::getBindingDescription()

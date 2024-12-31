@@ -4,11 +4,13 @@
 //#include "GlfwWindow.h"
 #include "VulkanRenderer.h"
 #include "keymovement.h"
+#include "ScopObject.h"
 
 class GlfwWindow;
 
 namespace scop
 {
+
 	class Scop
 	{
 	public:
@@ -20,6 +22,8 @@ namespace scop
 		void run();
 		void prepare();
 		void render();
+		ScopObject* createScopObject();
+
 		
 		static void buttonRotation(Keymovement::RotationInput rotationInput);
 		static void unbuttonRotation(Keymovement::RotationInput rotationInput);
@@ -34,8 +38,12 @@ namespace scop
 		GlfwWindow _window{ _width, _height, _windowName };
 		
 		vks::VulkanRenderer _renderer{ _window };
+		std::vector<ScopObject*> ScopObjects;
 
-		
+		void deleteScopObjects();
+
+	public: 
+		vks::VulkanRenderer* getVulkanRenderer() { return &_renderer; }
 	};
 
 }

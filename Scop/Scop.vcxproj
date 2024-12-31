@@ -142,6 +142,7 @@
     <ClCompile Include="math.cpp" />
     <ClCompile Include="Matrix.cpp" />
     <ClCompile Include="Scop.cpp" />
+    <ClCompile Include="ScopObject.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="Vector.cpp" />
     <ClCompile Include="VulkanBuffer.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="math.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="Scop.h" />
+    <ClInclude Include="ScopObject.h" />
     <ClInclude Include="test.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="VulkanBuffer.h" />

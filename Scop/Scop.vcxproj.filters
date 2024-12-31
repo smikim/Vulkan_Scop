@@ -28,14 +28,14 @@
     <Filter Include="library\Math">
       <UniqueIdentifier>{ca47c3f3-3a91-4810-a565-8199a72cd197}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Scop">
+      <UniqueIdentifier>{c682eee7-c092-4af4-965d-e350ff52024e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{ea57ea32-b98d-4f39-874c-027e551fc4b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Scop.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="GlfwWindow.cpp">
       <Filter>Application</Filter>
     </ClCompile>
@@ -102,17 +102,23 @@
     <ClCompile Include="Camera.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="math.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="keymovement.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="Scop.cpp">
+      <Filter>Scop</Filter>
+    </ClCompile>
+    <ClCompile Include="math.cpp">
+      <Filter>library\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="ScopObject.cpp">
+      <Filter>Scop</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Scop.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="GlfwWindow.h">
       <Filter>Application</Filter>
     </ClInclude>
@@ -185,11 +191,17 @@
     <ClInclude Include="Camera.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="math.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="keymovement.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="math.h">
+      <Filter>library\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Scop.h">
+      <Filter>Scop</Filter>
+    </ClInclude>
+    <ClInclude Include="ScopObject.h">
+      <Filter>Scop</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

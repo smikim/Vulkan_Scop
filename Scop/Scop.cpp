@@ -11,6 +11,7 @@ namespace scop
 
 	Scop::~Scop()
 	{
+		deleteScopObjects();
 	}
 
 	void Scop::run()
@@ -29,10 +30,29 @@ namespace scop
 	void Scop::prepare()
 	{
 		_renderer.initVulkan();
-		_renderer.buildBasicCommandBuffers();
+		createScopObject();
+		//_renderer.buildBasicCommandBuffers();
 	}
 
 	void Scop::render()
+	{
+
+		VkResult result = _renderer.beginRender();
+		if (result != VK_SUCCESS) return;
+		_renderer.beginRenderPass();
+		// update uniform buffer 
+		// render object
+		for (size_t i = 0; i < ScopObjects.size(); i++)
+		{
+			ScopObjects[i]->Render();
+		}
+		_renderer.endRenderPass();
+		result = _renderer.endRender();
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+			return ;
+	}
+
+	/*void Scop::render()
 	{
 
 		VkResult result = _renderer.prepareFrame();
@@ -47,6 +67,15 @@ namespace scop
 			_renderer.buildBasicCommandBuffers();
 		}
 
+	}*/
+
+	ScopObject* Scop::createScopObject()
+	{
+		ScopObject* obj = new ScopObject;
+		obj->Initialize(this);
+		ScopObjects.push_back(obj);
+
+		return obj;
 	}
 
 	void Scop::buttonRotation(Keymovement::RotationInput rotationInput)
@@ -114,6 +143,14 @@ namespace scop
 		default:
 			return;
 		}
+	}
+
+	void Scop::deleteScopObjects()
+	{
+		for (ScopObject* obj : ScopObjects) {
+			delete obj;
+		}
+		ScopObjects.clear();
 	}
 	
 

@@ -52,7 +52,7 @@ namespace vks
 		vkDestroyCommandPool(_vulkanDevice->getLogicalDevice(), _CmdPool, nullptr);
 
 		delete _texture;
-		delete _model;
+		//delete _model;
 		delete _vulkanDevice;
 	}
 
@@ -121,8 +121,9 @@ namespace vks
 
 		// TODO 
 		
-		_model = new VulkanModel(*_vulkanDevice);
-		_model->createVertexBuffer(queue.get_queue());
+		//_model = new VulkanModel(*_vulkanDevice);
+
+		//_model->createVertexBuffer(queue.get_queue());
 
 		_camera.setPerspectiveProjection(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
 		_camera.setViewTarget(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
@@ -142,6 +143,35 @@ namespace vks
 			if ((i + 1) % 4 == 0) std::cout << std::endl;
 		}
 		return true;
+	}
+
+	VulkanModel* VulkanRenderer::CreateBasicMeshObject()
+	{
+		VulkanModel* vulkanModel = new VulkanModel;
+		vulkanModel->Initialize(this);
+
+		return vulkanModel;
+	}
+
+	void VulkanRenderer::BeginCreateMesh(VulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices)
+	{
+		model->createVertexBuffer(vertices);
+
+	}
+
+	void VulkanRenderer::InsertIndexBuffer(VulkanModel* model, std::vector<uint32_t>& indices)
+	{
+		model->createIndexBuffer(indices);
+	}
+
+	void VulkanRenderer::EndCreateMesh(VulkanModel* model)
+	{
+		model->EndCreateMesh();
+	}
+
+	void VulkanRenderer::DeleteMeshObject(VulkanModel* model)
+	{
+		delete model;
 	}
 
 	void VulkanRenderer::init_basicPipeline(Graphics::BasicPSO* basicPSO, VkPipelineLayout pipelineLayout)
@@ -170,6 +200,113 @@ namespace vks
 		shaderStages.push_back(shaderStage);
 
 		_basicPipeline = new VulkanPipeline(*_vulkanDevice, shaderStages, basicPSO->_pipelineState);
+	}
+
+	VkResult VulkanRenderer::beginRender()
+	{
+		auto result = _swapChain->acquireNextImage(_WaitFences[_currentFrame], _PresentCompleteSemaphores[_currentFrame], &_currentImageIndex);
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+			_window.resetWindowResizedFlag();
+			windowResize();
+			std::cout << "beginFrame(): return nullptr" << std::endl;
+			return result;
+		}
+		if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+			//throw std::runtime_error("failed to acquire swap chain image!");
+			return result;
+		}
+
+		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
+		
+		// Build the command buffer
+		// Unlike in OpenGL all rendering commands are recorded into command buffers that are then submitted to the queue
+		// This allows to generate work upfront in a separate thread
+		// For basic command buffers (like in this sample), recording is so fast that there is no need to offload this
+
+		vkResetCommandBuffer(commandBuffer, 0);
+		//std::cout << commandBuffer << std::endl;
+
+		_drawCommandBuffer->begin(commandBuffer);
+
+		return VK_SUCCESS;
+	}
+
+	void VulkanRenderer::beginRenderPass()
+	{
+		std::vector<VkClearValue> clearValues;
+		VkClearValue clearValue;
+
+		clearValue.color = _defaultClearColor;
+		clearValues.push_back(clearValue);
+
+		clearValue.depthStencil = { 1.0f, 0 };
+		clearValues.push_back(clearValue);
+
+		uint32_t width = getWidth();
+		uint32_t height = getHeight();
+		
+		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
+
+		_drawCommandBuffer->begin_renderpass(commandBuffer, get_frameBuffer_by_index(_currentImageIndex), _RenderPass, width, height, clearValues);
+
+		_drawCommandBuffer->set_viewport(commandBuffer, width, height);
+		_drawCommandBuffer->set_scissor(commandBuffer, width, height);
+
+	}
+
+	void VulkanRenderer::endRenderPass()
+	{
+		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
+
+		_drawCommandBuffer->end_renderpass(commandBuffer);
+
+		_drawCommandBuffer->end(commandBuffer);
+	}
+
+	VkResult VulkanRenderer::endRender()
+	{
+		auto result = submitCommandBuffer();
+
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _window.wasWindowResized()) {
+			if (_window.wasWindowResized()) {
+				result = VK_ERROR_OUT_OF_DATE_KHR;
+			}
+			_window.resetWindowResizedFlag();
+			windowResize();
+			return result;
+		}
+		else if (result != VK_SUCCESS) {
+			return result;
+			//throw std::runtime_error("failed to present swap chain image!");
+		}
+
+		return VK_SUCCESS;
+	}
+
+	void VulkanRenderer::renderMeshObject(VulkanModel* object)
+	{
+		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
+
+		if (object)
+		{
+			// render object
+
+			_basicPipeline->bind(commandBuffer);
+
+			// Bind descriptor set for the currrent frame's uniform buffer, so the shader uses the data from that buffer for this draw
+
+			// TODO 
+			// renderGameObject 같은 함수를 만들어서 
+			// VulkanModel에서 가지고 있는 자기의 descriptorSets를 바인딩 시킨후 , 
+			// vertex, index buffer를 바인딩 시킨후
+			// draw 해주는 방향으로 수정 해야함 !!
+
+			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &_uniformBuffers[_currentFrame].descriptorSet, 0, nullptr);
+
+			object->bind(commandBuffer);
+			object->draw(commandBuffer);
+		}
 	}
 
 	void VulkanRenderer::buildBasicCommandBuffers()
@@ -203,17 +340,30 @@ namespace vks
 			_drawCommandBuffer->begin(commandBuffer);
 
 			_drawCommandBuffer->begin_renderpass(commandBuffer, get_frameBuffer_by_index(i), _RenderPass, width, height, clearValues);
+
+
 			_drawCommandBuffer->set_viewport(commandBuffer, width, height);
 			_drawCommandBuffer->set_scissor(commandBuffer, width, height);
+
+			// render object
 
 			_basicPipeline->bind(commandBuffer);
 
 			index = (index + 1) % MAX_CONCURRENT_FRAMES;
 			// Bind descriptor set for the currrent frame's uniform buffer, so the shader uses the data from that buffer for this draw
+			
+			// TODO 
+			// renderGameObject 같은 함수를 만들어서 
+			// VulkanModel에서 가지고 있는 자기의 descriptorSets를 바인딩 시킨후 , 
+			// vertex, index buffer를 바인딩 시킨후
+			// draw 해주는 방향으로 수정 해야함 !!
+
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &_uniformBuffers[index].descriptorSet, 0, nullptr);
 
 			_model->bind(commandBuffer);
 			_model->draw(commandBuffer);
+
+
 			//vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 
 			//VkDeviceSize offsets[1] = { 0 };
@@ -658,17 +808,19 @@ namespace vks
 		
 		//ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), time * glm::radians(90.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
 		
-		ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), angles[0], mymath::Vec3(1.0f, 0.0f, 0.0f));
-		ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[1], mymath::Vec3(0.0f, 1.0f, 0.0f));
-		ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[2], mymath::Vec3(0.0f, 0.0f, 1.0f));
+		//ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), angles[0], mymath::Vec3(1.0f, 0.0f, 0.0f));
+		//ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[1], mymath::Vec3(0.0f, 1.0f, 0.0f));
+		//ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[2], mymath::Vec3(0.0f, 0.0f, 1.0f));
 
-
+		ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), angles[0], glm::vec3(1.0f, 0.0f, 0.0f));
+		ubo.modelMatrix = glm::rotate(ubo.modelMatrix, angles[1], glm::vec3(0.0f, 1.0f, 0.0f));
+		ubo.modelMatrix = glm::rotate(ubo.modelMatrix, angles[2], glm::vec3(0.0f, 0.0f, 1.0f));
 
 		//ubo.modelMatrix = glm::mat4(1.0f);
 
-		//ubo.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+		ubo.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 		
-		ubo.viewMatrix = mymath::lookAt(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
+		//ubo.viewMatrix = mymath::lookAt(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
 		
 		
 		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
@@ -678,17 +830,17 @@ namespace vks
 		//ubo.viewMatrix = mymath::Mat4(1.0f);
 		//ubo.viewMatrix = glm::mat4(1.0f);
 
-		//ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
 		//ubo.projectionMatrix = _camera.getProjection();
 		
-		ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
+		//ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
 		//ubo.projectionMatrix = mymath::perspectiveGLM(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
 		
 		//ubo.projectionMatrix[5] *= -1;
 		//ubo.projectionMatrix = glm::mat4(1.0f);
 
 
-		//ubo.projectionMatrix[1][1] *= -1;
+		ubo.projectionMatrix[1][1] *= -1;
 		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
 	}
 
