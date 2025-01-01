@@ -1,5 +1,6 @@
 #include "Scop.h"
-  
+#include "KeyboardMovementController.h"
+
 namespace scop
 {
 	Keymovement Scop::_keymovement;
@@ -16,11 +17,25 @@ namespace scop
 
 	void Scop::run()
 	{
+		KeyboardMovementController cameraController{};
+		
+		auto currentTime = std::chrono::high_resolution_clock::now();
+
 		while (!_window.shouldClose()) {
+			auto newTime = std::chrono::high_resolution_clock::now();
+			float frameTime =
+				std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
+			currentTime = newTime;
+
+			frameTime = glm::min(frameTime, (float)MAX_FRAME_TIME);
 
 			glfwPollEvents();
-			_renderer.update();
-			_renderer.updateUniformBuffer();
+			cameraController.moveObjects(_window.getGLFWwindow(), frameTime, ScopObjects);
+
+
+			//_renderer.update();
+			///_renderer.updateUniformBuffer();
+			update();
 			render();
 		}
 
@@ -32,6 +47,14 @@ namespace scop
 		_renderer.initVulkan();
 		createScopObject();
 		//_renderer.buildBasicCommandBuffers();
+	}
+
+	void Scop::update()
+	{
+		for (size_t i = 0; i < ScopObjects.size(); i++)
+		{
+			ScopObjects[i]->Run();
+		}
 	}
 
 	void Scop::render()
@@ -74,7 +97,7 @@ namespace scop
 		ScopObject* obj = new ScopObject;
 		obj->Initialize(this);
 		ScopObjects.push_back(obj);
-
+		obj->_transform.translation = { .0f, .0f, 0.0f };
 		return obj;
 	}
 

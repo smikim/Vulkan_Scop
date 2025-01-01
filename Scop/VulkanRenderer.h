@@ -27,6 +27,8 @@
 
 #define MAX_CONCURRENT_FRAMES 2
 
+class ScopObject;
+
 namespace vks
 {
 	class VulkanDevice;
@@ -121,6 +123,7 @@ namespace vks
 
 		// TODO
 		void updateUniformBuffer();
+		void updateObjectUniformBuffer(VulkanModel* model, glm::mat4 worldMat);
 
 		void update();
 

@@ -8,6 +8,8 @@
 
 class GlfwWindow;
 
+#define MAX_FRAME_TIME 60
+
 namespace scop
 {
 
@@ -21,6 +23,7 @@ namespace scop
 
 		void run();
 		void prepare();
+		void update();
 		void render();
 		ScopObject* createScopObject();
 

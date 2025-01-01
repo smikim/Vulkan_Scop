@@ -137,6 +137,7 @@
     <ClCompile Include="BmpLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="GlfwWindow.cpp" />
+    <ClCompile Include="KeyboardMovementController.cpp" />
     <ClCompile Include="keymovement.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math.cpp" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="GlfwWindow.h" />
     <ClInclude Include="helpers.h" />
+    <ClInclude Include="KeyboardMovementController.h" />
     <ClInclude Include="keymovement.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="Matrix.h" />

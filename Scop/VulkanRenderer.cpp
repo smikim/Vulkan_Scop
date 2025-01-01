@@ -818,7 +818,10 @@ namespace vks
 
 		//ubo.modelMatrix = glm::mat4(1.0f);
 
+
+
 		ubo.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+		//ubo.viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		
 		//ubo.viewMatrix = mymath::lookAt(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
 		
@@ -844,6 +847,59 @@ namespace vks
 		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
 	}
 
+	void VulkanRenderer::updateObjectUniformBuffer(VulkanModel* model, glm::mat4 worldMat)
+	{
+		static auto startTime = std::chrono::high_resolution_clock::now();
+
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+		ShaderData ubo{};
+		//ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		//ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), time * glm::radians(90.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
+
+		//ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), angles[0], mymath::Vec3(1.0f, 0.0f, 0.0f));
+		//ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[1], mymath::Vec3(0.0f, 1.0f, 0.0f));
+		//ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[2], mymath::Vec3(0.0f, 0.0f, 1.0f));
+
+		//ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), angles[0], glm::vec3(1.0f, 0.0f, 0.0f));
+		//ubo.modelMatrix = glm::rotate(ubo.modelMatrix, angles[1], glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubo.modelMatrix = glm::rotate(ubo.modelMatrix, angles[2], glm::vec3(0.0f, 0.0f, 1.0f));
+
+		ubo.modelMatrix = worldMat;
+
+		//ubo.modelMatrix = glm::mat4(1.0f);
+
+
+
+		ubo.viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//ubo.viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		//ubo.viewMatrix = mymath::lookAt(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
+
+
+		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
+
+		//ubo.viewMatrix = _camera.getView();
+
+		//ubo.viewMatrix = mymath::Mat4(1.0f);
+		//ubo.viewMatrix = glm::mat4(1.0f);
+
+		ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
+		//ubo.projectionMatrix = _camera.getProjection();
+
+		//ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
+		//ubo.projectionMatrix = mymath::perspectiveGLM(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+
+		//ubo.projectionMatrix[5] *= -1;
+		//ubo.projectionMatrix = glm::mat4(1.0f);
+
+
+		ubo.projectionMatrix[1][1] *= -1;
+		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
+	}
+
 	void VulkanRenderer::update()
 	{
 		
@@ -858,7 +914,7 @@ namespace vks
 		}
 		else if (scop::Scop::_keymovement.moves.spin_z)
 		{
-			angles[3] += 0.01;
+			angles[2] += 0.01;
 		}
 	}
 

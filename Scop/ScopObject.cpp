@@ -114,10 +114,12 @@ namespace scop
 	ScopObject::ScopObject()
 	{
 	}
+
 	ScopObject::~ScopObject()
 	{
 		Cleanup();
 	}
+	
 	bool ScopObject::Initialize(Scop* scop)
 	{
 		_scop = scop;
@@ -127,7 +129,7 @@ namespace scop
 		return false;
 	}
 
-	void ScopObject::setTransltation(float x, float y, float z)
+	void ScopObject::setTranslation(float x, float y, float z)
 	{
 		_transform.translation.x = x;
 		_transform.translation.y = y;
@@ -157,9 +159,33 @@ namespace scop
 
 	}
 
+	void ScopObject::moveRotation(float x, float y, float z)
+	{
+		_transform.rotation.x += x;
+		_transform.rotation.y += y;
+		_transform.rotation.z += z;
+
+		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(x), glm::vec3(1.0f, 0.0f, 0.0f));
+		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(y), glm::vec3(0.0f, 1.0f, 0.0f));
+		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(z), glm::vec3(0.0f, 0.0f, 1.0f));
+
+	}
+
+	void ScopObject::moveTranslation(float x, float y, float z)
+	{
+		_transform.translation.x += x;
+		_transform.translation.y += y;
+		_transform.translation.z += z;
+
+		_transform.matTrans = glm::translate(_transform.matTrans, _transform.translation);
+
+
+	}
+
 	void ScopObject::Run()
 	{
-		UpdateTransform();
+		//UpdateTransform();
+		_renderer->updateObjectUniformBuffer(_vulkanModel, _transform.mat4());
 	}
 
 	void ScopObject::Render()
