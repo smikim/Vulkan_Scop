@@ -42,10 +42,19 @@ namespace scop
 		vkDeviceWaitIdle(_renderer.getVulkanDevice()->getLogicalDevice());
 	}
 
-	void Scop::prepare()
+	void Scop::prepare(std::string& filename)
 	{
 		_renderer.initVulkan();
-		createScopObject();
+		// pass obj filename
+		try {
+			createScopObject(filename);
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Failed to prepare ScopObject: " << e.what() << std::endl;
+			// 예외 발생 시 추가적인 처리 (필요에 따라)
+		}
+		
 		//_renderer.buildBasicCommandBuffers();
 	}
 
@@ -92,12 +101,21 @@ namespace scop
 
 	}*/
 
-	ScopObject* Scop::createScopObject()
+	ScopObject* Scop::createScopObject(std::string& filename)
 	{
 		ScopObject* obj = new ScopObject;
-		obj->Initialize(this);
+		
+		// pass obj
+		// if obj file fails, catch exception
+		if (!obj->Initialize(this, filename))
+		{
+			delete obj;
+			throw std::runtime_error("Failed to initialize ScopObject with filename: " + filename);
+		}
+		
 		ScopObjects.push_back(obj);
 		obj->_transform.translation = { .0f, .0f, 0.0f };
+		obj->_transform.scale = { 0.5f, 0.5f, 0.5f };
 		return obj;
 	}
 

@@ -1,5 +1,6 @@
 #include "ScopObject.h"
 #include "Scop.h"
+#include "ObjMeshLoader.h"
 
 namespace scop
 {
@@ -78,6 +79,7 @@ namespace scop
 		};
 	}
 
+
 	vks::VulkanModel* ScopObject::CreateBoxMeshObject()
 	{
 		vks::VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
@@ -96,6 +98,35 @@ namespace scop
 
 		return _vulkanModel;
 	}
+
+	vks::VulkanModel* ScopObject::CreateObjMeshObject(std::string& filename)
+	{
+		vks::VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
+
+		try
+		{
+			glm::mat4 flipYMatrix = glm::mat4(1.0f);
+			flipYMatrix[1][1] = -1.0f;
+
+			ObjMeshLoader objLoader{ filename, glm::mat4(1.0f) };
+
+			_vulkanModel = _renderer->CreateBasicMeshObject();
+
+			_renderer->BeginCreateMesh(_vulkanModel, objLoader.vertices);
+			_renderer->InsertIndexBuffer(_vulkanModel, objLoader.indices);
+			_renderer->EndCreateMesh(_vulkanModel);
+
+		}
+		catch (const std::exception& e)
+		{
+			std::cerr << "Failed to load OBJ mesh: " << e.what() << std::endl;
+			return nullptr;
+		}
+		
+		return _vulkanModel;
+	}
+
+
 
 	void ScopObject::UpdateTransform()
 	{
@@ -120,13 +151,19 @@ namespace scop
 		Cleanup();
 	}
 	
-	bool ScopObject::Initialize(Scop* scop)
+	bool ScopObject::Initialize(Scop* scop, std::string& filename)
 	{
 		_scop = scop;
 		_renderer = scop->getVulkanRenderer();
 
-		_vulkanModel = CreateBoxMeshObject();
-		return false;
+		// Add creatMeshObject()
+		// call obj loader
+		//_vulkanModel = CreateBoxMeshObject();
+		_vulkanModel = CreateObjMeshObject(filename);
+
+		if (_vulkanModel == nullptr)
+			return false;
+		return true;
 	}
 
 	void ScopObject::setTranslation(float x, float y, float z)

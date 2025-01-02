@@ -50,7 +50,7 @@ namespace scop
 		// TODO
 		// obj file에서 데이터 읽어 오는 거로 확장
 		vks::VulkanModel* CreateBoxMeshObject();
-
+		vks::VulkanModel* CreateObjMeshObject(std::string& filename);
 
 		void	UpdateTransform();
 		void	Cleanup();
@@ -59,7 +59,7 @@ namespace scop
 
 		ScopObject();
 		~ScopObject();
-		bool	Initialize(Scop* scop);
+		bool	Initialize(Scop* scop, std::string& filename);
 		void	setTranslation(float x, float y, float z);
 		void	setScale(float x, float y, float z);
 		void	setRotation(float x, float y, float z);

@@ -174,7 +174,8 @@ namespace vks
 		bool _prepared = false;
 		bool _resized = false;
 
-		VkClearColorValue _defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
+		//VkClearColorValue _defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
+		VkClearColorValue _defaultClearColor = { { 0.0f, 0.0f, 0.2f, 1.0f } };
 
 		// To select the correct sync objects, we need to keep track of the current frame
 		uint32_t _currentFrame{ 0 };

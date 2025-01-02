@@ -94,12 +94,12 @@ namespace vks
 		// TODO
 		// loadTexture();
 
-		std::string filename{ "textures/lena.bmp" };
+		//std::string filename{ "textures/lena.bmp" };
 		
 		//std::string filename{ "textures/sample.bmp" };
 		
 		//std::string filename{ "textures/640-480-sample.bmp" };
-		//std::string filename{ "textures/blackbuck.bmp" };
+		std::string filename{ "textures/blackbuck.bmp" };
 		//std::string filename{ "textures/bmp_24.bmp" };
 		
 		//std::string filename{ "textures/dots.bmp" };
@@ -126,7 +126,7 @@ namespace vks
 		//_model->createVertexBuffer(queue.get_queue());
 
 		_camera.setPerspectiveProjection(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
-		_camera.setViewTarget(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+		_camera.setViewTarget(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(0.0f, 0.0f, 0.0f));
 		
 		glm::mat4 cameraView = _camera.getView();
 		std::cout << "---- cameraView -----" << std::endl;
@@ -242,6 +242,16 @@ namespace vks
 
 		clearValue.depthStencil = { 1.0f, 0 };
 		clearValues.push_back(clearValue);
+	
+
+
+
+		//std::vector<VkClearValue> clearValues(2);
+
+		////clearValues[0].color = _defaultClearColor;
+		//clearValues[0].color = { { 1.0f, 0.0f, 0.0f, 1.0f } };
+		//clearValues[1].depthStencil = { 1.0f, 0 };
+
 
 		uint32_t width = getWidth();
 		uint32_t height = getHeight();

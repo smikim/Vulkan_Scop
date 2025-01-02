@@ -12,6 +12,11 @@ class GlfwWindow;
 
 namespace scop
 {
+	enum TextureState {
+		TEXTURE_GRAYSCALE = 1,
+		TEXTURE_COLOR = 2,
+		TEXTURE_ENABLED = 0
+	};
 
 	class Scop
 	{
@@ -22,10 +27,10 @@ namespace scop
 		//bool initVulkan();
 
 		void run();
-		void prepare();
+		void prepare(std::string& filename);
 		void update();
 		void render();
-		ScopObject* createScopObject();
+		ScopObject* createScopObject(std::string& filename);
 
 		
 		static void buttonRotation(Keymovement::RotationInput rotationInput);

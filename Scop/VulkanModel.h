@@ -33,6 +33,7 @@ namespace vks
 			float position[3];
 			float color[3];
 			float uv[2];
+			float normal[3];
 
 			static std::vector<VkVertexInputBindingDescription> getBindingDescription();
 			static std::vector<VkVertexInputAttributeDescription> getAttributeDescription();

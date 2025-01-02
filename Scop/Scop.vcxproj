@@ -105,6 +105,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.290.0\Include;C:\Users\kimse\vulkan_v3\Vulkan_Scop\external\glm;C:\Users\kimse\vulkan_v3\Vulkan_Scop\external\glfw-3.4.bin.WIN64\include;C:\Users\kimse\vulkan_v3\Vulkan_Scop\external\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,6 +123,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\VulkanSDK\1.3.290.0\Include;C:\Users\kimse\vulkan_v3\Vulkan_Scop\external\glm;C:\Users\kimse\vulkan_v3\Vulkan_Scop\external\glfw-3.4.bin.WIN64\include;C:\Users\kimse\vulkan_v3\Vulkan_Scop\external\stb-master;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,6 +144,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math.cpp" />
     <ClCompile Include="Matrix.cpp" />
+    <ClCompile Include="ObjMeshLoader.cpp" />
     <ClCompile Include="Scop.cpp" />
     <ClCompile Include="ScopObject.cpp" />
     <ClCompile Include="test.cpp" />
@@ -172,6 +175,7 @@
     <ClInclude Include="keymovement.h" />
     <ClInclude Include="math.h" />
     <ClInclude Include="Matrix.h" />
+    <ClInclude Include="ObjMeshLoader.h" />
     <ClInclude Include="Scop.h" />
     <ClInclude Include="ScopObject.h" />
     <ClInclude Include="test.h" />

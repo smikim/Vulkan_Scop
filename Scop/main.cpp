@@ -19,17 +19,28 @@ void mathTest()
    //testTranslateFunctions();
 }
    
-
+// obj file 
+// https://people.math.sc.edu/Burkardt/data/obj/obj.html
 
 int main() {
 
-    mathTest();
+    //mathTest();
     
+    std::string filename = "models/42.obj";
+    //std::string filename = "models/teapot.obj";
+    //std::string filename = "models/teapot2.obj";
+    //std::string filename = "models/humanoid_quad.obj";
+    //std::string filename = "models/monkey.obj";
+    //std::string filename = "models/al.obj";
+    //std::string filename = "models/power_lines.obj";
+    //std::string filename = "models/skyscraper.obj";
+
     scop::Scop * scop;
     try
     {
         scop = new scop::Scop();
-        scop->prepare();
+        // pass obj file
+        scop->prepare(filename);
         scop->run();
     }
     catch (const std::bad_alloc& e)
