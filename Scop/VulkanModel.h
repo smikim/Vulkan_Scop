@@ -34,6 +34,7 @@ namespace vks
 			float color[3];
 			float uv[2];
 			float normal[3];
+			uint32_t	 triangleID; // »ï°¢Çü ID
 
 			static std::vector<VkVertexInputBindingDescription> getBindingDescription();
 			static std::vector<VkVertexInputAttributeDescription> getAttributeDescription();

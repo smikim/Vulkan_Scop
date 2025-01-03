@@ -1,4 +1,5 @@
 #include "Vector.h"
+#include <iostream>
 
 namespace mymath
 {
@@ -69,6 +70,13 @@ namespace mymath
 	{
 	}
 
+	Vec3::Vec3(float scalar)
+	{
+		_x = scalar;
+		_y = scalar;
+		_z = scalar;
+	}
+
 	Vec3::Vec3(float x, float y, float z)
 		: _x(x), _y(y), _z(z)
 	{
@@ -108,6 +116,24 @@ namespace mymath
 		return Vec3(_x / scalar, _y / scalar, _z / scalar);
 	}
 
+	Vec3& Vec3::operator+=(const Vec3& other)
+	{
+		_x += other._x;
+		_y += other._y;
+		_z += other._z;
+
+		return *this;
+	}
+
+	Vec3& Vec3::operator-=(const Vec3& other)
+	{
+		_x -= other._x;
+		_y -= other._y;
+		_z -= other._z;
+
+		return *this;
+	}
+
 	Vec3 Vec3::cross(const Vec3& other) const
 	{
 		return Vec3(_y * other._z - _z * other._y,
@@ -134,5 +160,10 @@ namespace mymath
 			return *this;
 	}
 
+
+	Vec3 operator*(const float scalar, const Vec3& vec)
+	{
+		return Vec3(vec._x * scalar, vec._y * scalar, vec._z * scalar);
+	}
 
 }

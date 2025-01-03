@@ -17,7 +17,7 @@ namespace scop
 
 	void Scop::run()
 	{
-		KeyboardMovementController cameraController{};
+		KeyboardMovementController keyboardController{};
 		
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
@@ -30,8 +30,8 @@ namespace scop
 			frameTime = glm::min(frameTime, (float)MAX_FRAME_TIME);
 
 			glfwPollEvents();
-			cameraController.moveObjects(_window.getGLFWwindow(), frameTime, ScopObjects);
-
+			keyboardController.moveObjects(_window.getGLFWwindow(), frameTime, ScopObjects);
+			keyboardController.switchColoring(_window.getGLFWwindow(), ScopObjects);
 
 			//_renderer.update();
 			///_renderer.updateUniformBuffer();

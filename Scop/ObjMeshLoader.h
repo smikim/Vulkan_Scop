@@ -27,11 +27,19 @@ namespace scop
 		std::vector<glm::vec3> v, vn;
 		std::vector<glm::vec2> vt;
 		std::vector<glm::vec3> vertexColors; // √ﬂ∞°µ» ∫§≈Õ
+		
+		struct Triangle {
+			std::array<uint32_t, 3>		indices;
+		};
+		std::vector<Triangle>			triangles;
+	
 
 		float minX = std::numeric_limits<float>::max(), maxX = std::numeric_limits<float>::lowest();
 		float minY = std::numeric_limits<float>::max(), maxY = std::numeric_limits<float>::lowest();
 		float minZ = std::numeric_limits<float>::max(), maxZ = std::numeric_limits<float>::lowest();
+		glm::vec3 sum{ 0.0f, 0.0f, 0.0f };
 
+		
 		ObjMeshLoader(const std::string& objFilepath, glm::mat4 preTransform);
 
 		void	checkFile(const std::string& path, const std::string& extension);
@@ -46,6 +54,7 @@ namespace scop
 
 		void read_face_data(const std::vector<std::string>& words);
 
+		//void read_corner(const std::string& vertex_description, glm::vec2& tex);
 		void read_corner(const std::string& vertex_description);
 
 		std::vector<std::string> split(const std::string& line, const std::string& delimiter);

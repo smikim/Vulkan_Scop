@@ -12,12 +12,6 @@ class GlfwWindow;
 
 namespace scop
 {
-	enum TextureState {
-		TEXTURE_GRAYSCALE = 1,
-		TEXTURE_COLOR = 2,
-		TEXTURE_ENABLED = 0
-	};
-
 	class Scop
 	{
 	public:

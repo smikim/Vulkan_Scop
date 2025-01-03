@@ -26,14 +26,19 @@ int main() {
 
     //mathTest();
     
-    std::string filename = "models/42.obj";
+    //std::string filename = "models/42.obj";
     //std::string filename = "models/teapot.obj";
     //std::string filename = "models/teapot2.obj";
     //std::string filename = "models/humanoid_quad.obj";
+    //std::string filename = "models/humanoid_tri.obj";
     //std::string filename = "models/monkey.obj";
     //std::string filename = "models/al.obj";
     //std::string filename = "models/power_lines.obj";
     //std::string filename = "models/skyscraper.obj";
+    //std::string filename = "models/sandal.obj";
+    //std::string filename = "models/lamp.obj";
+    std::string filename = "models/shuttle.obj";
+  
 
     scop::Scop * scop;
     try

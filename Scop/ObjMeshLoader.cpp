@@ -72,9 +72,64 @@ namespace scop {
 		}
 		file.close();
 
+		// 중심축 이동 
+		
+		int vertexCount = vertices.size();
+		glm::vec3 center = sum / (float)vertexCount;
+
+		uint32_t triangleID = 0;
+		for (auto& vertex : vertices) {
+			vertex.position[0] -= center.x;
+			vertex.position[1] -= center.y;
+			vertex.position[2] -= center.z;
+			vertex.triangleID = triangleID++;
+		}
+
+		//glm::vec2 texture_coords[4] = {
+		//	{ 0.0f, 0.0f },
+		//	{ 1.0f, 0.0f },
+		//	{ 1.0f, 1.0f },
+		//	{ 0.0f, 1.0f }
+		//};
+
+		//std::size_t	i = 0;
+		//for (auto& triangle : triangles) {
+		//	if (i % 2 == 0) {
+		//		vertices[triangle.indices[0]].uv[0] = texture_coords[0].x;
+		//		vertices[triangle.indices[0]].uv[1] = texture_coords[0].y;
+
+		//		vertices[triangle.indices[1]].uv[0] = texture_coords[1].x;
+		//		vertices[triangle.indices[1]].uv[1] = texture_coords[1].y;
+
+		//		vertices[triangle.indices[2]].uv[0] = texture_coords[2].x;
+		//		vertices[triangle.indices[2]].uv[1] = texture_coords[2].y;
+
+
+		//		//triangle.indices[1].texture = 1;
+		//		
+		//		//triangle.indices[2].texture = 2;
+		//	}
+		//	else {
+
+		//		vertices[triangle.indices[0]].uv[0] = texture_coords[0].x;
+		//		vertices[triangle.indices[0]].uv[1] = texture_coords[0].y;
+
+		//		vertices[triangle.indices[1]].uv[0] = texture_coords[2].x;
+		//		vertices[triangle.indices[1]].uv[1] = texture_coords[2].y;
+
+		//		vertices[triangle.indices[2]].uv[0] = texture_coords[3].x;
+		//		vertices[triangle.indices[2]].uv[1] = texture_coords[3].y;
+		//		
+		//		
+
+		//		//triangle.indices[0].texture = 0;
+		//		//triangle.indices[1].texture = 2;
+		//		//triangle.indices[2].texture = 3;
+		//	}
+		//	i++;
+		//}
 
 		
-
 	}
 
 	void ObjMeshLoader::checkFile(const std::string& path, const std::string& extension)
@@ -150,6 +205,8 @@ namespace scop {
 		maxY = std::max(transformed_vertex.y, maxY);
 		maxZ = std::max(transformed_vertex.z, maxZ);
 
+		sum += transformed_vertex;
+
 		// 색상 값이 포함된 경우
 		if (words.size() > 6) {
 			glm::vec3 color = glm::vec3(std::stof(words[4]), std::stof(words[5]), std::stof(words[6]));
@@ -175,13 +232,44 @@ namespace scop {
 
 		size_t triangleCount = words.size() - 3;
 
+		glm::vec2 texture_coords[4] = {
+			{ 0.0f, 0.0f },
+			{ 1.0f, 0.0f },
+			{ 1.0f, 1.0f },
+			{ 0.0f, 1.0f }
+		};
+		// 0, 1, 2, 0, 2, 3, 0, 3, 4 
+		//uint32_t	 triangleID = 0;
 		for (int i = 0; i < triangleCount; ++i) {
+			
+			//if((i % 2) == 0) {
+			////if(i == 0) {
+			//	// 0, 1, 2
+			//	read_corner(words[1], texture_coords[0]);
+			//	read_corner(words[2 + i], texture_coords[1]);
+			//	read_corner(words[3 + i], texture_coords[2]);
+			//}
+			//else
+			//{
+			//	// 0, 2, 3
+			//	// i = 1, 2, 3, 4, 5, ...
+			//	// 0, ( 2 + i) - (i), (3 + i) - (i)
+			//	read_corner(words[1], texture_coords[0]);
+			//	read_corner(words[2 + i], texture_coords[2]);
+			//	read_corner(words[3 + i], texture_coords[3]);
+			//}
+
+			Triangle triangle{ 0 };
+			
 			read_corner(words[1]);
 			read_corner(words[2 + i]);
 			read_corner(words[3 + i]);
+			triangles.push_back(triangle);
+			
 		}
 	}
 
+	//void ObjMeshLoader::read_corner(const std::string& vertex_description, glm::vec2& tex) {
 	void ObjMeshLoader::read_corner(const std::string& vertex_description) {
 		auto it = history.find(vertex_description);
 		if (it != history.end()) {
@@ -192,7 +280,7 @@ namespace scop {
 		uint32_t index = static_cast<uint32_t>(history.size());
 		history.insert({ vertex_description, index });
 		indices.push_back(index);
-
+		//triangle = index;
 
 		std::vector<std::string> v_vt_vn = split(vertex_description, "/");
 
@@ -203,6 +291,7 @@ namespace scop {
 		vertex.position[0] = pos[0];
 		vertex.position[1] = pos[1];
 		vertex.position[2] = pos[2];
+
 
 		// color
 		glm::vec3 color = vertexColors[std::stol(v_vt_vn[0]) - 1];
@@ -273,7 +362,12 @@ namespace scop {
 		else
 		{
 			vertex.uv[0] = (vertex.position[0] - minX) / (maxX - minX);
+			
+			//vertex.uv[0] = tex.x;
+			
 			vertex.uv[1] = 1.0f - ((vertex.position[1] - minY) / (maxY - minY));
+			//vertex.uv[1] = tex.y;
+
 
 		}
 			
@@ -288,6 +382,7 @@ namespace scop {
 		vertex.normal[1] = normal[1];
 		vertex.normal[2] = normal[2];
 
+		
 		vertices.push_back(vertex);
 	}
 
@@ -298,7 +393,10 @@ namespace scop {
 		size_t end = line.find(delimiter);
 
 		while (end != std::string::npos) {
-			split_line.push_back(line.substr(start, end - start));
+			if (end != start) { // 연속된 구분자를 무시
+				split_line.push_back(line.substr(start, end - start));
+			}
+			//split_line.push_back(line.substr(start, end - start));
 			start = end + delimiter.length();
 			end = line.find(delimiter, start);
 		}

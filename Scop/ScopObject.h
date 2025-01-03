@@ -1,6 +1,8 @@
 #pragma once
 
 #include "VulkanModel.h"
+#include "Vector.h"
+#include "Matrix.h"
 
 namespace scop
 {
@@ -8,9 +10,13 @@ namespace scop
 	class VulkanRenderer;
 
 	struct TransformComponent {
-		glm::vec3 translation{};
-		glm::vec3 scale{ 1.f, 1.f, 1.f };
-		glm::vec3 rotation{};
+		//glm::vec3 translation{};
+		//glm::vec3 scale{ 1.f, 1.f, 1.f };
+		//glm::vec3 rotation{};
+
+		mymath::Vec3 translation{};
+		mymath::Vec3 scale{ 1.f, 1.f, 1.f };
+		mymath::Vec3 rotation{};
 
 		bool spinAtX = false;
 		bool spinAtY = false;
@@ -20,19 +26,27 @@ namespace scop
 		bool spinOnY = false;
 		bool spinOnZ = false;
 
-		glm::mat4 matTrans{1.0f};
+		/*glm::mat4 matTrans{1.0f};
 		glm::mat4 matRot{1.0f};
-		glm::mat4 matScale{ 1.0f };
+		glm::mat4 matScale{ 1.0f };*/
 
-		glm::mat4 worldMatrix{ 1.0f };
+		mymath::Mat4 matTrans{ 1.0f };
+		mymath::Mat4 matRot{ 1.0f };
+		mymath::Mat4 matScale{ 1.0f };
+
+
+		//glm::mat4 worldMatrix{ 1.0f };
+		mymath::Mat4 worldMatrix{ 1.0f };
+
+
 		// Matrix correspons to translate * Ry * Rx * Rz * scale transformation
 		// Rotation convention uses tait-bryan angles with axis order Y(1), X(2), Z(3)
 		 // Matrix corrsponds to Translate * Ry * Rx * Rz * Scale
 		// Rotations correspond to Tait-bryan angles of Y(1), X(2), Z(3)
 		// https://en.wikipedia.org/wiki/Euler_angles#Rotation_matrix
 		
-		glm::mat4 mat4();
-		glm::mat4 getWorldMatrix();
+		mymath::Mat4 mat4();
+		mymath::Mat4 getWorldMatrix();
 		glm::mat3 normalMatrix();
 
 	};
@@ -56,6 +70,7 @@ namespace scop
 		void	Cleanup();
 	public:
 		TransformComponent _transform{ };
+		uint32_t			_colorMode{3};
 
 		ScopObject();
 		~ScopObject();

@@ -236,7 +236,7 @@ void testRotationFunctions() {
     mymath::Vec3 axis(0.0f, 1.0f, 0.0f);
     
     //float angle = glm::radians(45.0f);
-    float angle = radians(45.0f);
+    float angle = mymath::radians(45.0f);
     
     mymath::Mat4 rotatedCustomMat = mymath::rotate(customMat, angle, axis);
 

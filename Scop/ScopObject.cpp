@@ -4,7 +4,7 @@
 
 namespace scop
 {
-	glm::mat4 TransformComponent::mat4()
+	/*glm::mat4 TransformComponent::mat4()
 	{
 		const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);
@@ -34,23 +34,57 @@ namespace scop
 			},
 			{translation.x, translation.y, translation.z, 1.0f} };
 
-	}
+	}*/
 	
-	glm::mat4 TransformComponent::getWorldMatrix()
+	mymath::Mat4 TransformComponent::mat4()
+	{
+		const float c3 = glm::cos(rotation._z);
+		const float s3 = glm::sin(rotation._z);
+		const float c2 = glm::cos(rotation._x);
+		const float s2 = glm::sin(rotation._x);
+		const float c1 = glm::cos(rotation._y);
+		const float s1 = glm::sin(rotation._y);
+
+		mymath::Mat4 res{ 1.0 };
+		res[0] = scale._x * (c1 * c3 + s1 * s2 * s3);
+		res[1] = scale._x * (c2 * s3);
+		res[2] = scale._x * (c1 * s2 * s3 - c3 * s1);
+		res[3] = 0.0f;
+
+		res[4] = scale._y * (c3 * s1 * s2 - c1 * s3);
+		res[5] = scale._y * (c2 * c3);
+		res[6] = scale._y * (c1 * c3 * s2 + s1 * s3);
+		res[7] = 0.0f;
+
+		res[8] = scale._z * (c2 * s1);
+		res[9] = scale._z * (-s2);
+		res[10] = scale._z * (c1 * c2);
+		res[11] = 0.0f;
+
+		res[12] = translation._x;
+		res[13] = translation._y;
+		res[14] = translation._z;
+		res[15] = 1.0f;
+
+		return res;
+	}
+
+
+	mymath::Mat4 TransformComponent::getWorldMatrix()
 	{
 		return worldMatrix;
 
-		glm::mat4 mat{ 1.0 };
+		/*glm::mat4 mat{ 1.0 };
 		mat = glm::translate(mat, translation);
 		mat = glm::rotate(mat, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
 		mat = glm::rotate(mat, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
 		mat = glm::rotate(mat, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 		mat = glm::scale(mat, scale);
 
-		return mat;
+		return mat;*/
 	}
 
-	glm::mat3 TransformComponent::normalMatrix()
+	/*glm::mat3 TransformComponent::normalMatrix()
 	{
 		const float c3 = glm::cos(rotation.z);
 		const float s3 = glm::sin(rotation.z);
@@ -77,8 +111,39 @@ namespace scop
 				invScale.z * (c1 * c2),
 			},
 		};
-	}
+	}*/
 
+	glm::mat3 TransformComponent::normalMatrix()
+	{
+		const float c3 = glm::cos(rotation._z);
+		const float s3 = glm::sin(rotation._z);
+		const float c2 = glm::cos(rotation._x);
+		const float s2 = glm::sin(rotation._x);
+		const float c1 = glm::cos(rotation._y);
+		const float s1 = glm::sin(rotation._y);
+		mymath::Vec3 invScale;
+		invScale._x = 1.0f / scale._x;
+		invScale._y = 1.0f / scale._y;
+		invScale._z = 1.0f / scale._z;
+	
+		return glm::mat3{
+			{
+				invScale._x * (c1 * c3 + s1 * s2 * s3),
+				invScale._x * (c2 * s3),
+				invScale._x * (c1 * s2 * s3 - c3 * s1),
+			},
+			{
+				invScale._y * (c3 * s1 * s2 - c1 * s3),
+				invScale._y * (c2 * c3),
+				invScale._y * (c1 * c3 * s2 + s1 * s3),
+			},
+			{
+				invScale._z * (c2 * s1),
+				invScale._z * (-s2),
+				invScale._z * (c1 * c2),
+			},
+		};
+	}
 
 	vks::VulkanModel* ScopObject::CreateBoxMeshObject()
 	{
@@ -168,53 +233,53 @@ namespace scop
 
 	void ScopObject::setTranslation(float x, float y, float z)
 	{
-		_transform.translation.x = x;
-		_transform.translation.y = y;
-		_transform.translation.z = z;
+		_transform.translation._x = x;
+		_transform.translation._y = y;
+		_transform.translation._z = z;
 
-		_transform.matTrans = glm::translate(_transform.matTrans, _transform.translation);
+		_transform.matTrans = mymath::translate(_transform.matTrans, _transform.translation);
 	}
 
 	void ScopObject::setScale(float x, float y, float z)
 	{
-		_transform.scale.x = x;
-		_transform.scale.y = y;
-		_transform.scale.z = z;
+		_transform.scale._x = x;
+		_transform.scale._y = y;
+		_transform.scale._z = z;
 		
-		_transform.matScale = glm::scale(_transform.matScale, _transform.scale);
+		_transform.matScale = mymath::scale(_transform.matScale, _transform.scale);
 	}
 
 	void ScopObject::setRotation(float x, float y, float z)
 	{
-		_transform.rotation.x = x;
-		_transform.rotation.y = y;
-		_transform.rotation.z = z;
+		_transform.rotation._x = x;
+		_transform.rotation._y = y;
+		_transform.rotation._z = z;
 
-		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(x), glm::vec3(1.0f, 0.0f, 0.0f));
-		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(y), glm::vec3(0.0f, 1.0f, 0.0f));
-		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(z), glm::vec3(0.0f, 0.0f, 1.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(x), mymath::Vec3(1.0f, 0.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(y), mymath::Vec3(0.0f, 1.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(z), mymath::Vec3(0.0f, 0.0f, 1.0f));
 
 	}
 
 	void ScopObject::moveRotation(float x, float y, float z)
 	{
-		_transform.rotation.x += x;
-		_transform.rotation.y += y;
-		_transform.rotation.z += z;
+		_transform.rotation._x += x;
+		_transform.rotation._y += y;
+		_transform.rotation._z += z;
 
-		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(x), glm::vec3(1.0f, 0.0f, 0.0f));
-		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(y), glm::vec3(0.0f, 1.0f, 0.0f));
-		_transform.matRot = glm::rotate(_transform.matRot, glm::radians(z), glm::vec3(0.0f, 0.0f, 1.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(x), mymath::Vec3(1.0f, 0.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(y), mymath::Vec3(0.0f, 1.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(z), mymath::Vec3(0.0f, 0.0f, 1.0f));
 
 	}
 
 	void ScopObject::moveTranslation(float x, float y, float z)
 	{
-		_transform.translation.x += x;
-		_transform.translation.y += y;
-		_transform.translation.z += z;
+		_transform.translation._x += x;
+		_transform.translation._y += y;
+		_transform.translation._z += z;
 
-		_transform.matTrans = glm::translate(_transform.matTrans, _transform.translation);
+		_transform.matTrans = mymath::translate(_transform.matTrans, _transform.translation);
 
 
 	}
@@ -222,7 +287,7 @@ namespace scop
 	void ScopObject::Run()
 	{
 		//UpdateTransform();
-		_renderer->updateObjectUniformBuffer(_vulkanModel, _transform.mat4());
+		_renderer->updateObjectUniformBuffer(_vulkanModel, _transform.mat4(), _colorMode);
 	}
 
 	void ScopObject::Render()

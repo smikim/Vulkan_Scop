@@ -37,14 +37,23 @@ namespace scop
             int spinOnZ = GLFW_KEY_3;
         };
 
+        struct ColoringKeyMapping{
+            uint32_t    rainbow = GLFW_KEY_6;
+            uint32_t    gray = GLFW_KEY_7;
+            uint32_t    texture = GLFW_KEY_8;
+            uint32_t    original = GLFW_KEY_9;    
+        };
+
         void moveInPlaneXZ(GLFWwindow* window, float dt, ScopObject& gameObject);
         void myMoveInPlaneXZ(GLFWwindow* window, float dt, ScopObject& gameObject);
         
         void moveObjects(GLFWwindow* window, float dt, std::vector<ScopObject*>& gameObjects);
 
+        void switchColoring(GLFWwindow* window, std::vector<ScopObject*>& gameObjects);
 
         KeyMappings keys{};
         MoveKeyMappings moves{};
+        ColoringKeyMapping coloring;
 
         float moveSpeed{ 3.f };
         float lookSpeed{ 1.5f };

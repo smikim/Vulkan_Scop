@@ -34,13 +34,18 @@ namespace mymath
 		float _z;
 
 		Vec3();
+		Vec3(float scalar);
 		Vec3(float x, float y, float z);
 		Vec3(const Vec3& copy);
 		Vec3& operator=(const Vec3& copy);
 		Vec3 operator+(const Vec3& other) const;
 		Vec3 operator-(const Vec3& other) const;
+		
 		Vec3 operator*(const float scalar) const;
+
 		Vec3 operator/(const float scalar) const;
+		Vec3& operator+=(const Vec3& other);
+		Vec3& operator-=(const Vec3& other);
 
 		Vec3 cross(const Vec3& other) const;
 		float dot(const Vec3& other) const;
@@ -48,6 +53,9 @@ namespace mymath
 
 		Vec3 normalize() const;
 	};
+
+	// 전역 연산자 함수 선언
+	Vec3 operator*(const float scalar, const Vec3& vec);
 }
 
 

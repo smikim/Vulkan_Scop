@@ -62,14 +62,16 @@ namespace vks
 		// This way we can just memcopy the ubo data to the ubo
 		// Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
 		struct ShaderData {
-			alignas(16) glm::mat4 modelMatrix;
-			//alignas(16) mymath::Mat4 modelMatrix;
+			//alignas(16) glm::mat4 modelMatrix;
+			alignas(16) mymath::Mat4 modelMatrix;
 			
-			glm::mat4 viewMatrix;
-			//alignas(16) mymath::Mat4 viewMatrix;
+			//glm::mat4 viewMatrix;
+			alignas(16) mymath::Mat4 viewMatrix;
 			
-			alignas(16) glm::mat4 projectionMatrix;
-			//alignas(16)  mymath::Mat4 projectionMatrix;
+			//alignas(16) glm::mat4 projectionMatrix;
+			alignas(16)  mymath::Mat4 projectionMatrix;
+
+			alignas(16) uint32_t colorMode;
 		}; 
 		
 		VulkanRenderer(GlfwWindow& window);
@@ -123,7 +125,7 @@ namespace vks
 
 		// TODO
 		void updateUniformBuffer();
-		void updateObjectUniformBuffer(VulkanModel* model, glm::mat4 worldMat);
+		void updateObjectUniformBuffer(VulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode);
 
 		void update();
 
