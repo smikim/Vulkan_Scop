@@ -102,9 +102,6 @@
     <ClCompile Include="Camera.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="keymovement.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="Scop.cpp">
       <Filter>Scop</Filter>
     </ClCompile>
@@ -195,9 +192,6 @@
       <Filter>소스 파일</Filter>
     </ClInclude>
     <ClInclude Include="Camera.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="keymovement.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="math.h">

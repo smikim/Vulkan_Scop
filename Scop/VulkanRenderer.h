@@ -11,15 +11,7 @@
 #include "BmpLoader.h"
 
 #include "Camera.h"
-#include "keymovement.h"
-
-
 #include "Matrix.h"
-
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <chrono>
 
