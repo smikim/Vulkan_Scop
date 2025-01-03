@@ -50,8 +50,6 @@ namespace scop
 		if (rotate.dot(rotate) > std::numeric_limits<float>::epsilon()) {
 			mymath::Vec3 offset = lookSpeed * dt * rotate.normalize();
 			gameObject.moveRotation(offset._x, offset._y, offset._z);
-
-			//gameObject._transform.rotation += lookSpeed * dt * glm::normalize(rotate);
 		}
 
 
@@ -75,8 +73,6 @@ namespace scop
 		if (moveDir.dot(moveDir) > std::numeric_limits<float>::epsilon()) {
 			mymath::Vec3 offset = moveSpeed * dt * moveDir.normalize();
 			gameObject.moveTranslation(offset._x, offset._y, offset._z);
-
-			//gameObject._transform.translation += moveSpeed * dt * glm::normalize(moveDir);
 		}
 	}
 
@@ -124,13 +120,11 @@ namespace scop
 
 
 			const mymath::Vec3 forwardDir{ 0.f, 0.f, 1.f };
-			//const glm::vec3 rightDir{ forwardDir.z, 0.f, -forwardDir.x };
 			mymath::Vec3 upDir{ 0.f, -1.f, 0.f };
 
 			const mymath::Vec3 rightDir = upDir.cross(forwardDir).normalize();
 			
-			//const mymath::Vec3 rightDir = forwardDir.cross(upDir).normalize();
-			
+		
 			//const mymath::Vec3 rightDir{ 1.0f, 0.0f, 0.0f };
 			upDir = forwardDir.cross(rightDir).normalize();
 			//upDir = rightDir.cross(forwardDir).normalize();

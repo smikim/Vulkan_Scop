@@ -3,6 +3,7 @@
 #include "VulkanModel.h"
 #include "Vector.h"
 #include "Matrix.h"
+#include "math.h"
 
 namespace scop
 {

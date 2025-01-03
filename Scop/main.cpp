@@ -1,23 +1,6 @@
 #include "Scop.h"
 
 #include <iostream>
-
-#include "test.h"
-
-void mathTest()
-{
-   //multi_matrix();
-   //compareMat4AndGLM();
-   //testLookAt();
-   //testLookAt2();
-   //
-   //testLookAt3();
-   //comparePerspectiveFunctions();
-   testRotationFunctions();
-   //testRotationFunctions2();
-   //testScaleFunctions();
-   //testTranslateFunctions();
-}
    
 // obj file 
 // https://people.math.sc.edu/Burkardt/data/obj/obj.html

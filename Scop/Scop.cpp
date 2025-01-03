@@ -25,7 +25,7 @@ namespace scop
 				std::chrono::duration<float, std::chrono::seconds::period>(newTime - currentTime).count();
 			currentTime = newTime;
 
-			frameTime = glm::min(frameTime, (float)MAX_FRAME_TIME);
+			frameTime = std::min(frameTime, (float)MAX_FRAME_TIME);
 
 			glfwPollEvents();
 			keyboardController.moveObjects(_window.getGLFWwindow(), frameTime, ScopObjects);

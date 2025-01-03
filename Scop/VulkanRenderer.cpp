@@ -1,8 +1,8 @@
 #include "VulkanRenderer.h"
 #include "VulkanTools.h"
 #include "Scop.h"
+#include "math.h"
 
-#include <glm/gtc/type_ptr.hpp>
 namespace vks
 {
 	VulkanRenderer::VulkanRenderer(GlfwWindow& window)
@@ -724,8 +724,8 @@ namespace vks
 		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
 
 	
-		ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
-		//ubo.projectionMatrix = mymath::perspectiveGLM(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+		ubo.projectionMatrix = mymath::perspective(mymath::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
+		//ubo.projectionMatrix = mymath::perspectiveGLM(mymath::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
 		//ubo.projectionMatrix[5] *= -1;
 
 		ubo.colorMode = colorMode;

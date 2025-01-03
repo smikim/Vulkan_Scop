@@ -4,8 +4,6 @@ namespace mymath
 {
     float radians(float degrees)
     {
-        std::cout << "M_PI : " << M_PI << std::endl;
-
         return degrees * M_PI / 180;
     }
 

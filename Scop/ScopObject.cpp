@@ -186,9 +186,9 @@ namespace scop
 		_transform.rotation._y = y;
 		_transform.rotation._z = z;
 
-		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(x), mymath::Vec3(1.0f, 0.0f, 0.0f));
-		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(y), mymath::Vec3(0.0f, 1.0f, 0.0f));
-		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(z), mymath::Vec3(0.0f, 0.0f, 1.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(x), mymath::Vec3(1.0f, 0.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(y), mymath::Vec3(0.0f, 1.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(z), mymath::Vec3(0.0f, 0.0f, 1.0f));
 
 	}
 
@@ -198,9 +198,9 @@ namespace scop
 		_transform.rotation._y += y;
 		_transform.rotation._z += z;
 
-		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(x), mymath::Vec3(1.0f, 0.0f, 0.0f));
-		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(y), mymath::Vec3(0.0f, 1.0f, 0.0f));
-		_transform.matRot = mymath::rotate(_transform.matRot, glm::radians(z), mymath::Vec3(0.0f, 0.0f, 1.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(x), mymath::Vec3(1.0f, 0.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(y), mymath::Vec3(0.0f, 1.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(z), mymath::Vec3(0.0f, 0.0f, 1.0f));
 
 	}
 

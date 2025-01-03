@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cassert>
 
 namespace vks
 {
