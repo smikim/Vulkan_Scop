@@ -47,14 +47,14 @@ namespace scop
 		vks::VulkanRenderer* _renderer;
 		// TODO 
 		// class IModel 로 추상화 하여, VulkanRenderer로만 접근 가능하게 변경
-		vks::VulkanModel* _vulkanModel;
+		vks::IVulkanModel* _vulkanModel;
 
 		
 
 		// TODO
 		// obj file에서 데이터 읽어 오는 거로 확장
-		vks::VulkanModel* CreateBoxMeshObject();
-		vks::VulkanModel* CreateObjMeshObject(std::string& filename);
+		vks::IVulkanModel* CreateBoxMeshObject();
+		vks::IVulkanModel* CreateObjMeshObject(std::string& filename);
 
 		void	UpdateTransform();
 		void	Cleanup();

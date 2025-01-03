@@ -65,11 +65,11 @@ namespace vks
 
 		bool initVulkan();
 		
-		VulkanModel* CreateBasicMeshObject();
-		void BeginCreateMesh(VulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices);
-		void InsertIndexBuffer(VulkanModel* model, std::vector<uint32_t>& indices);
-		void EndCreateMesh(VulkanModel* model);
-		void DeleteMeshObject(VulkanModel* model);
+		IVulkanModel* CreateBasicMeshObject();
+		void BeginCreateMesh(IVulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices);
+		void InsertIndexBuffer(IVulkanModel* model, std::vector<uint32_t>& indices);
+		void EndCreateMesh(IVulkanModel* model);
+		void DeleteMeshObject(IVulkanModel* model);
 
 		void init_basicPipeline(Graphics::BasicPSO* basicPSO, VkPipelineLayout pipelineLayout);
 		
@@ -77,7 +77,7 @@ namespace vks
 		void beginRenderPass();
 		void endRenderPass();
 		VkResult endRender();
-		void renderMeshObject(VulkanModel* object);
+		void renderMeshObject(IVulkanModel* object);
 
 		VkResult prepareFrame();
 		VkResult submitFrame();
@@ -103,13 +103,11 @@ namespace vks
 		};
 
 		// TODO
-		void updateObjectUniformBuffer(VulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode);
+		void updateObjectUniformBuffer(IVulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode);
 
 		Graphics::BasicPSO* _basicPSO;
 		VulkanPipeline* _basicPipeline;
 		VkPipelineLayout _basicPipelineLayout{ VK_NULL_HANDLE };
-
-		float angles[3]{};
 
 	private:
 		// TODO

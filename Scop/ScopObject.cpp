@@ -82,7 +82,7 @@ namespace scop
 		return res;
 	}
 
-	vks::VulkanModel* ScopObject::CreateBoxMeshObject()
+	vks::IVulkanModel* ScopObject::CreateBoxMeshObject()
 	{
 		vks::VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
 
@@ -101,7 +101,7 @@ namespace scop
 		return _vulkanModel;
 	}
 
-	vks::VulkanModel* ScopObject::CreateObjMeshObject(std::string& filename)
+	vks::IVulkanModel* ScopObject::CreateObjMeshObject(std::string& filename)
 	{
 		vks::VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
 

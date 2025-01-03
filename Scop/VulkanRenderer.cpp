@@ -121,7 +121,7 @@ namespace vks
 		return true;
 	}
 
-	VulkanModel* VulkanRenderer::CreateBasicMeshObject()
+	IVulkanModel* VulkanRenderer::CreateBasicMeshObject()
 	{
 		VulkanModel* vulkanModel = new VulkanModel;
 		vulkanModel->Initialize(this);
@@ -129,25 +129,54 @@ namespace vks
 		return vulkanModel;
 	}
 
-	void VulkanRenderer::BeginCreateMesh(VulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices)
+	void VulkanRenderer::BeginCreateMesh(IVulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices)
 	{
-		model->createVertexBuffer(vertices);
-
+		//model->createVertexBuffer(vertices);
+		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
+		if (vulkanModel) {
+			vulkanModel->createVertexBuffer(vertices);
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "TypeCast Error" << std::endl;
+		}
 	}
 
-	void VulkanRenderer::InsertIndexBuffer(VulkanModel* model, std::vector<uint32_t>& indices)
+	void VulkanRenderer::InsertIndexBuffer(IVulkanModel* model, std::vector<uint32_t>& indices)
 	{
-		model->createIndexBuffer(indices);
+		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
+		if (vulkanModel) {
+			vulkanModel->createIndexBuffer(indices);
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "TypeCast Error" << std::endl;
+		}
 	}
 
-	void VulkanRenderer::EndCreateMesh(VulkanModel* model)
+	void VulkanRenderer::EndCreateMesh(IVulkanModel* model)
 	{
-		model->EndCreateMesh();
+		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
+		if (vulkanModel) {
+			vulkanModel->EndCreateMesh();
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "TypeCast Error" << std::endl;
+		}
+		
 	}
 
-	void VulkanRenderer::DeleteMeshObject(VulkanModel* model)
+	void VulkanRenderer::DeleteMeshObject(IVulkanModel* model)
 	{
-		delete model;
+		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
+		if (vulkanModel) {
+			delete vulkanModel;
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "TypeCast Error" << std::endl;
+		}
 	}
 
 	void VulkanRenderer::init_basicPipeline(Graphics::BasicPSO* basicPSO, VkPipelineLayout pipelineLayout)
@@ -260,11 +289,12 @@ namespace vks
 		return VK_SUCCESS;
 	}
 
-	void VulkanRenderer::renderMeshObject(VulkanModel* object)
+	void VulkanRenderer::renderMeshObject(IVulkanModel* object)
 	{
 		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
+		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(object);
 
-		if (object)
+		if (vulkanModel)
 		{
 			// render object
 
@@ -279,8 +309,8 @@ namespace vks
 
 			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &_uniformBuffers[_currentFrame].descriptorSet, 0, nullptr);
 
-			object->bind(commandBuffer);
-			object->draw(commandBuffer);
+			vulkanModel->bind(commandBuffer);
+			vulkanModel->draw(commandBuffer);
 		}
 	}
 
@@ -679,7 +709,7 @@ namespace vks
 		}
 	}
 
-	void VulkanRenderer::updateObjectUniformBuffer(VulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode)
+	void VulkanRenderer::updateObjectUniformBuffer(IVulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode)
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
 
