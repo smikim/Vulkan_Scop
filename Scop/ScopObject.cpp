@@ -4,38 +4,6 @@
 
 namespace scop
 {
-	/*glm::mat4 TransformComponent::mat4()
-	{
-		const float c3 = glm::cos(rotation.z);
-		const float s3 = glm::sin(rotation.z);
-		const float c2 = glm::cos(rotation.x);
-		const float s2 = glm::sin(rotation.x);
-		const float c1 = glm::cos(rotation.y);
-		const float s1 = glm::sin(rotation.y);
-
-		return glm::mat4{
-			{
-				scale.x * (c1 * c3 + s1 * s2 * s3),
-				scale.x * (c2 * s3),
-				scale.x * (c1 * s2 * s3 - c3 * s1),
-				0.0f,
-			},
-			{
-				scale.y * (c3 * s1 * s2 - c1 * s3),
-				scale.y * (c2 * c3),
-				scale.y * (c1 * c3 * s2 + s1 * s3),
-				0.0f,
-			},
-			{
-				scale.z * (c2 * s1),
-				scale.z * (-s2),
-				scale.z * (c1 * c2),
-				0.0f,
-			},
-			{translation.x, translation.y, translation.z, 1.0f} };
-
-	}*/
-	
 	mymath::Mat4 TransformComponent::mat4()
 	{
 		const float c3 = std::cos(rotation._z);
@@ -73,45 +41,7 @@ namespace scop
 	mymath::Mat4 TransformComponent::getWorldMatrix()
 	{
 		return worldMatrix;
-
-		/*glm::mat4 mat{ 1.0 };
-		mat = glm::translate(mat, translation);
-		mat = glm::rotate(mat, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		mat = glm::rotate(mat, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		mat = glm::rotate(mat, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-		mat = glm::scale(mat, scale);
-
-		return mat;*/
 	}
-
-	/*glm::mat3 TransformComponent::normalMatrix()
-	{
-		const float c3 = glm::cos(rotation.z);
-		const float s3 = glm::sin(rotation.z);
-		const float c2 = glm::cos(rotation.x);
-		const float s2 = glm::sin(rotation.x);
-		const float c1 = glm::cos(rotation.y);
-		const float s1 = glm::sin(rotation.y);
-		const glm::vec3 invScale = 1.0f / scale;
-
-		return glm::mat3{
-			{
-				invScale.x * (c1 * c3 + s1 * s2 * s3),
-				invScale.x * (c2 * s3),
-				invScale.x * (c1 * s2 * s3 - c3 * s1),
-			},
-			{
-				invScale.y * (c3 * s1 * s2 - c1 * s3),
-				invScale.y * (c2 * c3),
-				invScale.y * (c1 * c3 * s2 + s1 * s3),
-			},
-			{
-				invScale.z * (c2 * s1),
-				invScale.z * (-s2),
-				invScale.z * (c1 * c2),
-			},
-		};
-	}*/
 
 	mymath::Mat4 TransformComponent::normalMatrix()
 	{
@@ -225,9 +155,6 @@ namespace scop
 		_scop = scop;
 		_renderer = scop->getVulkanRenderer();
 
-		// Add creatMeshObject()
-		// call obj loader
-		//_vulkanModel = CreateBoxMeshObject();
 		_vulkanModel = CreateObjMeshObject(filename);
 
 		if (_vulkanModel == nullptr)
@@ -290,7 +217,6 @@ namespace scop
 
 	void ScopObject::Run()
 	{
-		//UpdateTransform();
 		_renderer->updateObjectUniformBuffer(_vulkanModel, _transform.mat4(), _colorMode);
 	}
 
