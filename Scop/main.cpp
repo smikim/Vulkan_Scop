@@ -34,10 +34,10 @@ int main() {
     //std::string filename = "models/monkey.obj";
     //std::string filename = "models/al.obj";
     //std::string filename = "models/power_lines.obj";
-    //std::string filename = "models/skyscraper.obj";
+    std::string filename = "models/skyscraper.obj";
     //std::string filename = "models/sandal.obj";
     //std::string filename = "models/lamp.obj";
-    std::string filename = "models/shuttle.obj";
+    //std::string filename = "models/shuttle.obj";
   
 
     scop::Scop * scop;

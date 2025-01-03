@@ -5,7 +5,7 @@
 
 namespace scop {
 
-	ObjMeshLoader::ObjMeshLoader(const std::string& objFilepath, glm::mat4 preTransform)
+	ObjMeshLoader::ObjMeshLoader(const std::string& objFilepath)
 	{
 		this->preTransform = preTransform;
 
@@ -58,11 +58,12 @@ namespace scop {
 				read_normal_data(words);
 			}
 			if (!words[0].compare("usemtl")) {
+				std::cout << words[1] << std::endl;
 				if (colorLookup.contains(words[1])) {
 					brushColor = colorLookup[words[1]];
 				}
 				else {
-					brushColor = glm::vec3(1.0f);
+					brushColor = mymath::Vec3(-1.0f);
 				}
 			}
 
@@ -73,15 +74,16 @@ namespace scop {
 		file.close();
 
 		// 중심축 이동 
-		
+		// save triangle id
 		int vertexCount = vertices.size();
-		glm::vec3 center = sum / (float)vertexCount;
+		mymath::Vec3 center = sum / (float)vertexCount;
 
 		uint32_t triangleID = 0;
 		for (auto& vertex : vertices) {
-			vertex.position[0] -= center.x;
-			vertex.position[1] -= center.y;
-			vertex.position[2] -= center.z;
+			vertex.position[0] -= center._x;
+			vertex.position[1] -= center._y;
+			vertex.position[2] -= center._z;
+
 			vertex.triangleID = triangleID++;
 		}
 
@@ -183,7 +185,7 @@ namespace scop {
 					materialName = words[1];
 				}
 				if (!words[0].compare("Kd")) {
-					brushColor = glm::vec3(std::stof(words[1]), std::stof(words[2]), std::stof(words[3]));
+					brushColor = mymath::Vec3(std::stof(words[1]), std::stof(words[2]), std::stof(words[3]));
 					colorLookup.insert({ materialName, brushColor });
 				}
 			}
@@ -193,46 +195,44 @@ namespace scop {
 	}
 
 	void ObjMeshLoader::read_vertex_data(const std::vector<std::string>& words) {
-		glm::vec4 new_vertex = glm::vec4(std::stof(words[1]), std::stof(words[2]), std::stof(words[3]), 1.0f);
-		glm::vec3 transformed_vertex = glm::vec3(preTransform * new_vertex);
-		v.push_back(transformed_vertex);
+		mymath::Vec3 new_vertex = mymath::Vec3(std::stof(words[1]), std::stof(words[2]), std::stof(words[3]));
+		v.push_back(new_vertex);
 
-		minX = std::min(transformed_vertex.x, minX);
-		minY = std::min(transformed_vertex.y, minY);
-		minZ = std::min(transformed_vertex.z, minZ);
+		minX = std::min(new_vertex._x, minX);
+		minY = std::min(new_vertex._y, minY);
+		minZ = std::min(new_vertex._z, minZ);
 
-		maxX = std::max(transformed_vertex.x, maxX);
-		maxY = std::max(transformed_vertex.y, maxY);
-		maxZ = std::max(transformed_vertex.z, maxZ);
+		maxX = std::max(new_vertex._x, maxX);
+		maxY = std::max(new_vertex._y, maxY);
+		maxZ = std::max(new_vertex._z, maxZ);
 
-		sum += transformed_vertex;
+		sum += new_vertex;
 
 		// 색상 값이 포함된 경우
 		if (words.size() > 6) {
-			glm::vec3 color = glm::vec3(std::stof(words[4]), std::stof(words[5]), std::stof(words[6]));
+			mymath::Vec3 color = mymath::Vec3(std::stof(words[4]), std::stof(words[5]), std::stof(words[6]));
 			vertexColors.push_back(color);
 		}
 		else {
-			vertexColors.push_back(glm::vec3(-1.0f)); // 기본 색상
+			vertexColors.push_back(mymath::Vec3(-1.0f)); // 기본 색상
 		}
 	}
 
 	void ObjMeshLoader::read_texcoord_data(const std::vector<std::string>& words) {
-		glm::vec2 new_texcoord = glm::vec2(std::stof(words[1]), std::stof(words[2]));
+		mymath::Vec2 new_texcoord = mymath::Vec2(std::stof(words[1]), std::stof(words[2]));
 		vt.push_back(new_texcoord);
 	}
 
 	void ObjMeshLoader::read_normal_data(const std::vector<std::string>& words) {
-		glm::vec4 new_normal = glm::vec4(std::stof(words[1]), std::stof(words[2]), std::stof(words[3]), 0.0f);
-		glm::vec3 transformed_normal = glm::vec3(preTransform * new_normal);
-		vn.push_back(transformed_normal);
+		mymath::Vec3 new_normal = mymath::Vec3(std::stof(words[1]), std::stof(words[2]), std::stof(words[3]));
+		vn.push_back(new_normal);
 	}
 
 	void ObjMeshLoader::read_face_data(const std::vector<std::string>& words) {
 
 		size_t triangleCount = words.size() - 3;
 
-		glm::vec2 texture_coords[4] = {
+		mymath::Vec2 texture_coords[4] = {
 			{ 0.0f, 0.0f },
 			{ 1.0f, 0.0f },
 			{ 1.0f, 1.0f },
@@ -259,12 +259,12 @@ namespace scop {
 			//	read_corner(words[3 + i], texture_coords[3]);
 			//}
 
-			Triangle triangle{ 0 };
+			
 			
 			read_corner(words[1]);
 			read_corner(words[2 + i]);
 			read_corner(words[3 + i]);
-			triangles.push_back(triangle);
+		
 			
 		}
 	}
@@ -287,19 +287,19 @@ namespace scop {
 		vks::VulkanModel::Vertex vertex{};
 
 		//position
-		glm::vec3 pos = v[std::stol(v_vt_vn[0]) - 1];
-		vertex.position[0] = pos[0];
-		vertex.position[1] = pos[1];
-		vertex.position[2] = pos[2];
+		mymath::Vec3 pos = v[std::stol(v_vt_vn[0]) - 1];
+		vertex.position[0] = pos._x;
+		vertex.position[1] = pos._y;
+		vertex.position[2] = pos._z;
 
 
 		// color
-		glm::vec3 color = vertexColors[std::stol(v_vt_vn[0]) - 1];
-		if (color == glm::vec3(-1.0f)) { // 기본 색상인 경우 무지개색 사용
+		mymath::Vec3 color = vertexColors[std::stol(v_vt_vn[0]) - 1];
+		if (color == mymath::Vec3(-1.0f)) { // 기본 색상인 경우 무지개색 사용
 
 			// color
-			if (brushColor == glm::vec3(0.0f)) { // 기본 색상인 경우 무지개색 사용
-				static const glm::vec3 rainbowColors[] = {
+			if (brushColor == mymath::Vec3(-1.0f)) { // 기본 색상인 경우 무지개색 사용
+				static const mymath::Vec3 rainbowColors[] = {
 					{1.0f, 0.0f, 0.0f}, // 빨강
 					{1.0f, 0.5f, 0.0f}, // 주황
 					{1.0f, 1.0f, 0.0f}, // 노랑
@@ -309,14 +309,14 @@ namespace scop {
 					{0.56f, 0.0f, 1.0f}  // 보라
 				};
 				size_t colorIndex = index % (sizeof(rainbowColors) / sizeof(rainbowColors[0]));
-				vertex.color[0] = rainbowColors[colorIndex].r;
-				vertex.color[1] = rainbowColors[colorIndex].g;
-				vertex.color[2] = rainbowColors[colorIndex].b;
+				vertex.color[0] = rainbowColors[colorIndex]._x;
+				vertex.color[1] = rainbowColors[colorIndex]._y;
+				vertex.color[2] = rainbowColors[colorIndex]._z;
 			}
 			else {
-				vertex.color[0] = brushColor.r;
-				vertex.color[1] = brushColor.g;
-				vertex.color[2] = brushColor.b;
+				vertex.color[0] = brushColor._x;
+				vertex.color[1] = brushColor._y;
+				vertex.color[2] = brushColor._z;
 			}
 
 
@@ -340,9 +340,9 @@ namespace scop {
 
 		}
 		else {
-			vertex.color[0] = color.r;
-			vertex.color[1] = color.g;
-			vertex.color[2] = color.b;
+			vertex.color[0] = color._x;
+			vertex.color[1] = color._y;
+			vertex.color[2] = color._z;
 		}
 
 		
@@ -350,14 +350,14 @@ namespace scop {
 		
 
 		//texcoord
-		glm::vec2 texcoord = glm::vec2(0.0f, 0.0f);
+		mymath::Vec2 texcoord = mymath::Vec2(0.0f, 0.0f);
 		if (v_vt_vn.size() > 1 && !v_vt_vn[1].empty()) {
 			texcoord = vt[std::stol(v_vt_vn[1]) - 1];
 		}
 		if (!vt.empty())
 		{
-			vertex.uv[0] = texcoord[0];
-			vertex.uv[1] = texcoord[1];
+			vertex.uv[0] = texcoord._x;
+			vertex.uv[1] = texcoord._y;
 		}
 		else
 		{
@@ -374,13 +374,13 @@ namespace scop {
 
 
 		//normal
-		glm::vec3 normal = glm::vec3(0.0f, 0.0f, 0.0f); // 기본값 설정
+		mymath::Vec3 normal = mymath::Vec3(0.0f, 0.0f, 0.0f); // 기본값 설정
 		if (v_vt_vn.size() > 2 && !v_vt_vn[2].empty()) {
 			normal = vn[std::stol(v_vt_vn[2]) - 1];
 		}
-		vertex.normal[0] = normal[0];
-		vertex.normal[1] = normal[1];
-		vertex.normal[2] = normal[2];
+		vertex.normal[0] = normal._x;
+		vertex.normal[1] = normal._y;
+		vertex.normal[2] = normal._z;
 
 		
 		vertices.push_back(vertex);

@@ -45,6 +45,16 @@ namespace mymath
 		return Vec2(_x / scalar, _y / scalar);
 	}
 
+	bool Vec2::operator==(const Vec2& other) const
+	{
+		return _x == other._x && _y == other._y;
+	}
+
+	bool Vec2::operator!=(const Vec2& other) const
+	{
+		return !(*this == other);
+	}
+
 	float Vec2::dot(const Vec2& other) const
 	{
 		return _x * other._x + _y * other._y;
@@ -91,7 +101,7 @@ namespace mymath
 	{
 		_x = copy._x;
 		_y = copy._y;
-		_z = copy._x;
+		_z = copy._z;
 
 		return *this;
 	}
@@ -132,6 +142,16 @@ namespace mymath
 		_z -= other._z;
 
 		return *this;
+	}
+
+	bool Vec3::operator==(const Vec3& other) const
+	{
+		return _x == other._x && _y == other._y && _z == other._z;
+	}
+
+	bool Vec3::operator!=(const Vec3& other) const
+	{
+		return !(*this == other);
 	}
 
 	Vec3 Vec3::cross(const Vec3& other) const

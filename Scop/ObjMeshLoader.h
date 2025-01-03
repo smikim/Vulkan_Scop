@@ -7,9 +7,8 @@
 #include <unordered_map>
 #include <string>
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
+#include "Vector.h"
+#include "Matrix.h"
 
 namespace scop
 {
@@ -20,27 +19,22 @@ namespace scop
 		std::vector<vks::VulkanModel::Vertex> vertices;
 		std::vector<uint32_t> indices;
 		std::unordered_map<std::string, uint32_t> history;
-		std::unordered_map<std::string, glm::vec3> colorLookup;
-		glm::vec3 brushColor;
-		glm::mat4 preTransform;
+		std::unordered_map<std::string, mymath::Vec3> colorLookup;
+		mymath::Vec3 brushColor;
+		mymath::Mat4 preTransform;
 
-		std::vector<glm::vec3> v, vn;
-		std::vector<glm::vec2> vt;
-		std::vector<glm::vec3> vertexColors; // √ﬂ∞°µ» ∫§≈Õ
+		std::vector<mymath::Vec3> v, vn;
+		std::vector<mymath::Vec2> vt;
+		std::vector<mymath::Vec3> vertexColors; // √ﬂ∞°µ» ∫§≈Õ
 		
-		struct Triangle {
-			std::array<uint32_t, 3>		indices;
-		};
-		std::vector<Triangle>			triangles;
-	
 
 		float minX = std::numeric_limits<float>::max(), maxX = std::numeric_limits<float>::lowest();
 		float minY = std::numeric_limits<float>::max(), maxY = std::numeric_limits<float>::lowest();
 		float minZ = std::numeric_limits<float>::max(), maxZ = std::numeric_limits<float>::lowest();
-		glm::vec3 sum{ 0.0f, 0.0f, 0.0f };
+		mymath::Vec3 sum{ 0.0f, 0.0f, 0.0f };
 
 		
-		ObjMeshLoader(const std::string& objFilepath, glm::mat4 preTransform);
+		ObjMeshLoader(const std::string& objFilepath);
 
 		void	checkFile(const std::string& path, const std::string& extension);
 
@@ -54,7 +48,6 @@ namespace scop
 
 		void read_face_data(const std::vector<std::string>& words);
 
-		//void read_corner(const std::string& vertex_description, glm::vec2& tex);
 		void read_corner(const std::string& vertex_description);
 
 		std::vector<std::string> split(const std::string& line, const std::string& delimiter);

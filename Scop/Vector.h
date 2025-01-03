@@ -17,6 +17,8 @@ namespace mymath
 		Vec2 operator*(float scalar) const;
 		Vec2 operator/(float scalar) const;
 
+		bool operator==(const Vec2& other) const;
+		bool operator!=(const Vec2& other) const;
         // Dot product
         float dot(const Vec2& other) const;
 
@@ -46,6 +48,9 @@ namespace mymath
 		Vec3 operator/(const float scalar) const;
 		Vec3& operator+=(const Vec3& other);
 		Vec3& operator-=(const Vec3& other);
+
+		bool operator==(const Vec3& other) const;
+		bool operator!=(const Vec3& other) const;
 
 		Vec3 cross(const Vec3& other) const;
 		float dot(const Vec3& other) const;

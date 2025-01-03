@@ -177,10 +177,7 @@ namespace scop
 
 		try
 		{
-			mymath::Mat4 flipYMatrix = mymath::Mat4(1.0f);
-			flipYMatrix[5] = -1.0f;
-
-			ObjMeshLoader objLoader{ filename, glm::mat4(1.0f) };
+			ObjMeshLoader objLoader{ filename };
 
 			_vulkanModel = _renderer->CreateBasicMeshObject();
 

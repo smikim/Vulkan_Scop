@@ -1,7 +1,6 @@
 #include "KeyboardMovementController.h"
 #include "ScopObject.h"
 #include "math.h"
-#include <glm/gtc/matrix_transform.hpp>
 
 namespace scop
 {
@@ -128,19 +127,19 @@ namespace scop
 			//const glm::vec3 rightDir{ forwardDir.z, 0.f, -forwardDir.x };
 			mymath::Vec3 upDir{ 0.f, -1.f, 0.f };
 
-			//const mymath::Vec3 rightDir = upDir.cross(forwardDir).normalize();
+			const mymath::Vec3 rightDir = upDir.cross(forwardDir).normalize();
 			
 			//const mymath::Vec3 rightDir = forwardDir.cross(upDir).normalize();
 			
-			const mymath::Vec3 rightDir{ 1.0f, 0.0f, 0.0f };
-			//upDir = forwardDir.cross(rightDir).normalize();
+			//const mymath::Vec3 rightDir{ 1.0f, 0.0f, 0.0f };
+			upDir = forwardDir.cross(rightDir).normalize();
 			//upDir = rightDir.cross(forwardDir).normalize();
 
 			mymath::Vec3 moveDir{ 0.f };
 			if (glfwGetKey(window, moves.moveUpInZ) == GLFW_PRESS) {
-				std::cout << forwardDir._x << forwardDir._y << forwardDir._z << std::endl;
+				//std::cout << forwardDir._x << forwardDir._y << forwardDir._z << std::endl;
 				moveDir += forwardDir;
-				std::cout << moveDir._x << moveDir._y << moveDir._z << std::endl;
+				//std::cout << moveDir._x << moveDir._y << moveDir._z << std::endl;
 			}
 			if (glfwGetKey(window, moves.moveDownInZ) == GLFW_PRESS) moveDir -= forwardDir;
 			if (glfwGetKey(window, moves.moveRightInX) == GLFW_PRESS) moveDir += rightDir;
@@ -150,7 +149,7 @@ namespace scop
 
 			if (moveDir.dot(moveDir) > std::numeric_limits<float>::epsilon()) {
 				obj->_transform.translation += moveSpeed * dt * moveDir.normalize();
-				std::cout << obj->_transform.translation._x << obj->_transform.translation._y << obj->_transform.translation._z << std::endl;
+				//std::cout << obj->_transform.translation._x << obj->_transform.translation._y << obj->_transform.translation._z << std::endl;
 			}
 		}
 	}
