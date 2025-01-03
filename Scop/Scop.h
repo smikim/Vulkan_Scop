@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vulkan/vulkan.h"
-//#include "GlfwWindow.h"
 #include "VulkanRenderer.h"
 #include "keymovement.h"
 #include "ScopObject.h"
@@ -25,11 +24,6 @@ namespace scop
 		void update();
 		void render();
 		ScopObject* createScopObject(std::string& filename);
-
-		
-		static void buttonRotation(Keymovement::RotationInput rotationInput);
-		static void unbuttonRotation(Keymovement::RotationInput rotationInput);
-		static Keymovement _keymovement;
 
 	private:
 		
