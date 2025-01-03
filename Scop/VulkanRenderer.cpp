@@ -52,7 +52,6 @@ namespace vks
 		vkDestroyCommandPool(_vulkanDevice->getLogicalDevice(), _CmdPool, nullptr);
 
 		delete _texture;
-		//delete _model;
 		delete _vulkanDevice;
 	}
 
@@ -119,29 +118,6 @@ namespace vks
 
 		_prepared = true;
 
-		// TODO 
-		
-		//_model = new VulkanModel(*_vulkanDevice);
-
-		//_model->createVertexBuffer(queue.get_queue());
-
-		_camera.setPerspectiveProjection(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
-		_camera.setViewTarget(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(0.0f, 0.0f, 0.0f));
-		
-		glm::mat4 cameraView = _camera.getView();
-		std::cout << "---- cameraView -----" << std::endl;
-		const float* pSource1 = (const float*)glm::value_ptr(cameraView);
-		for (int i = 0; i < 16; ++i) {
-			std::cout << pSource1[i] << " ";
-			if ((i + 1) % 4 == 0) std::cout << std::endl;
-		}
-		std::cout << "---- cameraPer -----" << std::endl;
-		glm::mat4 cameraPer = _camera.getProjection();
-		pSource1 = (const float*)glm::value_ptr(cameraPer);
-		for (int i = 0; i < 16; ++i) {
-			std::cout << pSource1[i] << " ";
-			if ((i + 1) % 4 == 0) std::cout << std::endl;
-		}
 		return true;
 	}
 
@@ -242,16 +218,6 @@ namespace vks
 
 		clearValue.depthStencil = { 1.0f, 0 };
 		clearValues.push_back(clearValue);
-	
-
-
-
-		//std::vector<VkClearValue> clearValues(2);
-
-		////clearValues[0].color = _defaultClearColor;
-		//clearValues[0].color = { { 1.0f, 0.0f, 0.0f, 1.0f } };
-		//clearValues[1].depthStencil = { 1.0f, 0 };
-
 
 		uint32_t width = getWidth();
 		uint32_t height = getHeight();
@@ -306,8 +272,7 @@ namespace vks
 
 			// Bind descriptor set for the currrent frame's uniform buffer, so the shader uses the data from that buffer for this draw
 
-			// TODO 
-			// renderGameObject 같은 함수를 만들어서 
+			// TODO  
 			// VulkanModel에서 가지고 있는 자기의 descriptorSets를 바인딩 시킨후 , 
 			// vertex, index buffer를 바인딩 시킨후
 			// draw 해주는 방향으로 수정 해야함 !!
@@ -319,82 +284,6 @@ namespace vks
 		}
 	}
 
-	void VulkanRenderer::buildBasicCommandBuffers()
-	{
-		if (!_prepared)
-			return;
-
-		//vks::VulkanCommandBuffer * drawcommandBuffers = getDrawCommandBuffers();
-
-		// TODO
-		uint32_t index = 0;
-
-		for (int32_t i = 0; i < _drawCommandBuffer->get_commandBuffer_size(); ++i)
-		{
-			VkCommandBuffer commandBuffer = _drawCommandBuffer->get_commandBuffer_by_index(i);
-
-			//std::cout << commandBuffer << std::endl;
-
-			std::vector<VkClearValue> clearValues;
-			VkClearValue clearValue;
-
-			clearValue.color = _defaultClearColor;
-			clearValues.push_back(clearValue);
-
-			clearValue.depthStencil = { 1.0f, 0 };
-			clearValues.push_back(clearValue);
-
-			uint32_t width = getWidth();
-			uint32_t height = getHeight();
-
-			_drawCommandBuffer->begin(commandBuffer);
-
-			_drawCommandBuffer->begin_renderpass(commandBuffer, get_frameBuffer_by_index(i), _RenderPass, width, height, clearValues);
-
-
-			_drawCommandBuffer->set_viewport(commandBuffer, width, height);
-			_drawCommandBuffer->set_scissor(commandBuffer, width, height);
-
-			// render object
-
-			_basicPipeline->bind(commandBuffer);
-
-			index = (index + 1) % MAX_CONCURRENT_FRAMES;
-			// Bind descriptor set for the currrent frame's uniform buffer, so the shader uses the data from that buffer for this draw
-			
-			// TODO 
-			// renderGameObject 같은 함수를 만들어서 
-			// VulkanModel에서 가지고 있는 자기의 descriptorSets를 바인딩 시킨후 , 
-			// vertex, index buffer를 바인딩 시킨후
-			// draw 해주는 방향으로 수정 해야함 !!
-
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &_uniformBuffers[index].descriptorSet, 0, nullptr);
-
-			_model->bind(commandBuffer);
-			_model->draw(commandBuffer);
-
-
-			//vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-
-			//VkDeviceSize offsets[1] = { 0 };
-			//vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertexBuffer.buffer, offsets);
-			//vkCmdBindIndexBuffer(commandBuffer, indexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
-
-			////uint32_t dynamicOffset = static_cast<uint32_t>(dynamicUniformInfo.dynamicAlignment);
-			//uint32_t dynamicOffset = 0;
-			//// Bind the descriptor set for rendering a mesh using the dynamic offset
-			//vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &dynamicUniformInfo.descriptorSet, 1, &dynamicOffset);
-
-			//vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 0);
-
-			//renderGameObjects(commandBuffer, ObjgameObjects, dynamicUniformInfo.descriptorSet);
-
-			_drawCommandBuffer->end_renderpass(commandBuffer);
-
-			_drawCommandBuffer->end(commandBuffer);
-
-		}
-	}
 
 	VkResult VulkanRenderer::prepareFrame()
 	{
@@ -716,22 +605,6 @@ namespace vks
 		delete _drawCommandBuffer;
 		_drawCommandBuffer = new VulkanCommandBuffer(*_vulkanDevice, _CmdPool, _swapChain->_imageCount);
 
-		// Command buffers need to be recreated as they may store
-		// references to the recreated frame buffer
-		//destroyCommandBuffers();
-		//createCommandBuffers();
-		//buildCommandBuffers();
-
-
-		//for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
-		//	vkDestroyFence(logicalDevice, _WaitFences[i], nullptr);
-		//	vkDestroySemaphore(logicalDevice, _PresentCompleteSemaphores[i], nullptr);
-		//	vkDestroySemaphore(logicalDevice, _RenderCompleteSemaphores[i], nullptr);
-		//	//vkDestroyBuffer(device, uniformBuffers[i].buffer, nullptr);
-		//	//vkFreeMemory(device, uniformBuffers[i].memory, nullptr);
-		//}
-		//createSynchronizationPrimitives();
-
 		vkDeviceWaitIdle(logicalDevice);
 
 
@@ -806,57 +679,6 @@ namespace vks
 		}
 	}
 
-	void VulkanRenderer::updateUniformBuffer()
-	{
-		static auto startTime = std::chrono::high_resolution_clock::now();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		ShaderData ubo{};
-		//ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		
-		//ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), time * glm::radians(90.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
-		
-		ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), angles[0], mymath::Vec3(1.0f, 0.0f, 0.0f));
-		ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[1], mymath::Vec3(0.0f, 1.0f, 0.0f));
-		ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[2], mymath::Vec3(0.0f, 0.0f, 1.0f));
-
-		//ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), angles[0], glm::vec3(1.0f, 0.0f, 0.0f));
-		//ubo.modelMatrix = glm::rotate(ubo.modelMatrix, angles[1], glm::vec3(0.0f, 1.0f, 0.0f));
-		//ubo.modelMatrix = glm::rotate(ubo.modelMatrix, angles[2], glm::vec3(0.0f, 0.0f, 1.0f));
-
-		//ubo.modelMatrix = glm::mat4(1.0f);
-
-
-
-		//ubo.viewMatrix = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-		//ubo.viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		
-		ubo.viewMatrix = mymath::lookAt(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
-		
-		
-		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
-		
-		//ubo.viewMatrix = _camera.getView();
-
-		//ubo.viewMatrix = mymath::Mat4(1.0f);
-		//ubo.viewMatrix = glm::mat4(1.0f);
-
-		//ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
-		//ubo.projectionMatrix = _camera.getProjection();
-		
-		ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
-		//ubo.projectionMatrix = mymath::perspectiveGLM(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
-		
-		ubo.projectionMatrix[5] *= -1;
-		//ubo.projectionMatrix = glm::mat4(1.0f);
-
-
-		//ubo.projectionMatrix[1][1] *= -1;
-		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
-	}
-
 	void VulkanRenderer::updateObjectUniformBuffer(VulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode)
 	{
 		static auto startTime = std::chrono::high_resolution_clock::now();
@@ -865,68 +687,20 @@ namespace vks
 		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 		ShaderData ubo{};
-		//ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		//ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), time * glm::radians(90.0f), mymath::Vec3(0.0f, 0.0f, 1.0f));
-
-		//ubo.modelMatrix = mymath::rotate(mymath::Mat4(1.0f), angles[0], mymath::Vec3(1.0f, 0.0f, 0.0f));
-		//ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[1], mymath::Vec3(0.0f, 1.0f, 0.0f));
-		//ubo.modelMatrix = mymath::rotate(ubo.modelMatrix, angles[2], mymath::Vec3(0.0f, 0.0f, 1.0f));
-
-		//ubo.modelMatrix = glm::rotate(glm::mat4(1.0f), angles[0], glm::vec3(1.0f, 0.0f, 0.0f));
-		//ubo.modelMatrix = glm::rotate(ubo.modelMatrix, angles[1], glm::vec3(0.0f, 1.0f, 0.0f));
-		//ubo.modelMatrix = glm::rotate(ubo.modelMatrix, angles[2], glm::vec3(0.0f, 0.0f, 1.0f));
 
 		ubo.modelMatrix = worldMat;
 
-		//ubo.modelMatrix = glm::mat4(1.0f);
-
-
-
-		//ubo.viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, -8.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//ubo.viewMatrix = glm::lookAt(glm::vec3(0.0f, 0.0f, -2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-
 		ubo.viewMatrix = mymath::lookAt(mymath::Vec3(0.0f, 0.0f, -8.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 1.0f, 0.0f));
-
-
 		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
 
-		//ubo.viewMatrix = _camera.getView();
-
-		//ubo.viewMatrix = mymath::Mat4(1.0f);
-		//ubo.viewMatrix = glm::mat4(1.0f);
-
-		//ubo.projectionMatrix = glm::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
-		//ubo.projectionMatrix = _camera.getProjection();
-
+	
 		ubo.projectionMatrix = mymath::perspective(glm::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
 		//ubo.projectionMatrix = mymath::perspectiveGLM(glm::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
-
 		//ubo.projectionMatrix[5] *= -1;
-		//ubo.projectionMatrix = glm::mat4(1.0f);
 
 		ubo.colorMode = colorMode;
 
-		//ubo.projectionMatrix[1][1] *= -1;
 		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
-	}
-
-	void VulkanRenderer::update()
-	{
-		
-		if (scop::Scop::_keymovement.moves.spin_x)
-		{
-			std::cout << true << std::endl;
-			angles[0] += 0.01;
-		}
-		else if (scop::Scop::_keymovement.moves.spin_y)
-		{
-			angles[1] += 0.01;
-		}
-		else if (scop::Scop::_keymovement.moves.spin_z)
-		{
-			angles[2] += 0.01;
-		}
 	}
 
 	// Descriptors are allocated from a pool, that tells the implementation how many and what types of descriptors we are going to use (at maximum)

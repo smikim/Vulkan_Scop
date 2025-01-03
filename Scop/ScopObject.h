@@ -10,10 +10,6 @@ namespace scop
 	class VulkanRenderer;
 
 	struct TransformComponent {
-		//glm::vec3 translation{};
-		//glm::vec3 scale{ 1.f, 1.f, 1.f };
-		//glm::vec3 rotation{};
-
 		mymath::Vec3 translation{};
 		mymath::Vec3 scale{ 1.f, 1.f, 1.f };
 		mymath::Vec3 rotation{};
@@ -26,16 +22,10 @@ namespace scop
 		bool spinOnY = false;
 		bool spinOnZ = false;
 
-		/*glm::mat4 matTrans{1.0f};
-		glm::mat4 matRot{1.0f};
-		glm::mat4 matScale{ 1.0f };*/
-
 		mymath::Mat4 matTrans{ 1.0f };
 		mymath::Mat4 matRot{ 1.0f };
 		mymath::Mat4 matScale{ 1.0f };
 
-
-		//glm::mat4 worldMatrix{ 1.0f };
 		mymath::Mat4 worldMatrix{ 1.0f };
 
 

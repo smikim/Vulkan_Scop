@@ -36,7 +36,6 @@ namespace vks
 	class VulkanRenderer
 	{
 	public:
-
 		// Uniform buffer block object
 		struct UniformBuffer {
 			VkDeviceMemory memory;
@@ -62,15 +61,9 @@ namespace vks
 		// This way we can just memcopy the ubo data to the ubo
 		// Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
 		struct ShaderData {
-			//alignas(16) glm::mat4 modelMatrix;
 			alignas(16) mymath::Mat4 modelMatrix;
-			
-			//glm::mat4 viewMatrix;
 			alignas(16) mymath::Mat4 viewMatrix;
-			
-			//alignas(16) glm::mat4 projectionMatrix;
 			alignas(16)  mymath::Mat4 projectionMatrix;
-
 			alignas(16) uint32_t colorMode;
 		}; 
 		
@@ -94,7 +87,6 @@ namespace vks
 		VkResult endRender();
 		void renderMeshObject(VulkanModel* object);
 
-		void buildBasicCommandBuffers();
 		VkResult prepareFrame();
 		VkResult submitFrame();
 		
@@ -106,11 +98,8 @@ namespace vks
 			return _FrameBuffers[index];
 		}
 
-		VkCommandBuffer getCurrentCommandBuffer() const {
-			//assert(isFrameStarted && "Cannot get command buffer when frame not in progress");
+		VkCommandBuffer getCurrentCommandBuffer() const {		
 			return _drawCommandBuffer->get_commandBuffer_by_index(_currentImageIndex);
-			//return _drawCommandBuffer->get_commandBuffer_by_index(_currentFrame);
-			//return drawCmdBuffers[currentFrame];
 		}
 
 		vks::VulkanDevice* getVulkanDevice() const {
@@ -118,16 +107,11 @@ namespace vks
 		}
 
 		float getAspectRatio() { 
-			//std::cout << "GetAspectRaio() : " << static_cast<float>(_width) / static_cast<float>(_height) << std::endl;
-
 			return static_cast<float>(_width) / static_cast<float>(_height); 
 		};
 
 		// TODO
-		void updateUniformBuffer();
 		void updateObjectUniformBuffer(VulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode);
-
-		void update();
 
 		Graphics::BasicPSO* _basicPSO;
 		VulkanPipeline* _basicPipeline;
@@ -176,7 +160,6 @@ namespace vks
 		bool _prepared = false;
 		bool _resized = false;
 
-		//VkClearColorValue _defaultClearColor = { { 0.025f, 0.025f, 0.025f, 1.0f } };
 		VkClearColorValue _defaultClearColor = { { 0.0f, 0.0f, 0.2f, 1.0f } };
 
 		// To select the correct sync objects, we need to keep track of the current frame
@@ -231,6 +214,5 @@ namespace vks
 		VulkanTexture* _texture;
 		BmpLoader* _bmpLoader;
 
-		Camera _camera;
 	};
 }
