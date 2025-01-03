@@ -86,51 +86,6 @@ namespace scop {
 
 			vertex.triangleID = triangleID++;
 		}
-
-		//glm::vec2 texture_coords[4] = {
-		//	{ 0.0f, 0.0f },
-		//	{ 1.0f, 0.0f },
-		//	{ 1.0f, 1.0f },
-		//	{ 0.0f, 1.0f }
-		//};
-
-		//std::size_t	i = 0;
-		//for (auto& triangle : triangles) {
-		//	if (i % 2 == 0) {
-		//		vertices[triangle.indices[0]].uv[0] = texture_coords[0].x;
-		//		vertices[triangle.indices[0]].uv[1] = texture_coords[0].y;
-
-		//		vertices[triangle.indices[1]].uv[0] = texture_coords[1].x;
-		//		vertices[triangle.indices[1]].uv[1] = texture_coords[1].y;
-
-		//		vertices[triangle.indices[2]].uv[0] = texture_coords[2].x;
-		//		vertices[triangle.indices[2]].uv[1] = texture_coords[2].y;
-
-
-		//		//triangle.indices[1].texture = 1;
-		//		
-		//		//triangle.indices[2].texture = 2;
-		//	}
-		//	else {
-
-		//		vertices[triangle.indices[0]].uv[0] = texture_coords[0].x;
-		//		vertices[triangle.indices[0]].uv[1] = texture_coords[0].y;
-
-		//		vertices[triangle.indices[1]].uv[0] = texture_coords[2].x;
-		//		vertices[triangle.indices[1]].uv[1] = texture_coords[2].y;
-
-		//		vertices[triangle.indices[2]].uv[0] = texture_coords[3].x;
-		//		vertices[triangle.indices[2]].uv[1] = texture_coords[3].y;
-		//		
-		//		
-
-		//		//triangle.indices[0].texture = 0;
-		//		//triangle.indices[1].texture = 2;
-		//		//triangle.indices[2].texture = 3;
-		//	}
-		//	i++;
-		//}
-
 		
 	}
 
@@ -238,38 +193,14 @@ namespace scop {
 			{ 1.0f, 1.0f },
 			{ 0.0f, 1.0f }
 		};
-		// 0, 1, 2, 0, 2, 3, 0, 3, 4 
-		//uint32_t	 triangleID = 0;
-		for (int i = 0; i < triangleCount; ++i) {
-			
-			//if((i % 2) == 0) {
-			////if(i == 0) {
-			//	// 0, 1, 2
-			//	read_corner(words[1], texture_coords[0]);
-			//	read_corner(words[2 + i], texture_coords[1]);
-			//	read_corner(words[3 + i], texture_coords[2]);
-			//}
-			//else
-			//{
-			//	// 0, 2, 3
-			//	// i = 1, 2, 3, 4, 5, ...
-			//	// 0, ( 2 + i) - (i), (3 + i) - (i)
-			//	read_corner(words[1], texture_coords[0]);
-			//	read_corner(words[2 + i], texture_coords[2]);
-			//	read_corner(words[3 + i], texture_coords[3]);
-			//}
 
-			
-			
+		for (int i = 0; i < triangleCount; ++i) {					
 			read_corner(words[1]);
 			read_corner(words[2 + i]);
-			read_corner(words[3 + i]);
-		
-			
+			read_corner(words[3 + i]);					
 		}
 	}
 
-	//void ObjMeshLoader::read_corner(const std::string& vertex_description, glm::vec2& tex) {
 	void ObjMeshLoader::read_corner(const std::string& vertex_description) {
 		auto it = history.find(vertex_description);
 		if (it != history.end()) {
@@ -318,26 +249,6 @@ namespace scop {
 				vertex.color[1] = brushColor._y;
 				vertex.color[2] = brushColor._z;
 			}
-
-
-			//vertex.color[0] = 1.0f;
-			//vertex.color[1] = 1.0f;
-			//vertex.color[2] = 1.0f;
-
-			//static const glm::vec3 rainbowColors[] = {
-			//	{1.0f, 0.0f, 0.0f}, // 빨강
-			//	{1.0f, 0.5f, 0.0f}, // 주황
-			//	{1.0f, 1.0f, 0.0f}, // 노랑
-			//	{0.0f, 1.0f, 0.0f}, // 초록
-			//	{0.0f, 0.0f, 1.0f}, // 파랑
-			//	{0.29f, 0.0f, 0.51f}, // 남색
-			//	{0.56f, 0.0f, 1.0f}  // 보라
-			//};
-			//size_t colorIndex = index % (sizeof(rainbowColors) / sizeof(rainbowColors[0]));
-			//vertex.color[0] = rainbowColors[colorIndex].r;
-			//vertex.color[1] = rainbowColors[colorIndex].g;
-			//vertex.color[2] = rainbowColors[colorIndex].b;
-
 		}
 		else {
 			vertex.color[0] = color._x;
@@ -361,17 +272,10 @@ namespace scop {
 		}
 		else
 		{
-			vertex.uv[0] = (vertex.position[0] - minX) / (maxX - minX);
-			
-			//vertex.uv[0] = tex.x;
-			
-			vertex.uv[1] = 1.0f - ((vertex.position[1] - minY) / (maxY - minY));
-			//vertex.uv[1] = tex.y;
-
-
+			vertex.uv[0] = (vertex.position[0] - minX) / (maxX - minX);			
+			vertex.uv[1] = 1.0f - ((vertex.position[1] - minY) / (maxY - minY));	
 		}
 			
-
 
 		//normal
 		mymath::Vec3 normal = mymath::Vec3(0.0f, 0.0f, 0.0f); // 기본값 설정
@@ -396,7 +300,6 @@ namespace scop {
 			if (end != start) { // 연속된 구분자를 무시
 				split_line.push_back(line.substr(start, end - start));
 			}
-			//split_line.push_back(line.substr(start, end - start));
 			start = end + delimiter.length();
 			end = line.find(delimiter, start);
 		}
