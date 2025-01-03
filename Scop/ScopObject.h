@@ -47,7 +47,7 @@ namespace scop
 		
 		mymath::Mat4 mat4();
 		mymath::Mat4 getWorldMatrix();
-		glm::mat3 normalMatrix();
+		mymath::Mat4 normalMatrix();
 
 	};
 

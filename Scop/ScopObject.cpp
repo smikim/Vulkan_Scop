@@ -38,12 +38,12 @@ namespace scop
 	
 	mymath::Mat4 TransformComponent::mat4()
 	{
-		const float c3 = glm::cos(rotation._z);
-		const float s3 = glm::sin(rotation._z);
-		const float c2 = glm::cos(rotation._x);
-		const float s2 = glm::sin(rotation._x);
-		const float c1 = glm::cos(rotation._y);
-		const float s1 = glm::sin(rotation._y);
+		const float c3 = std::cos(rotation._z);
+		const float s3 = std::sin(rotation._z);
+		const float c2 = std::cos(rotation._x);
+		const float s2 = std::sin(rotation._x);
+		const float c1 = std::cos(rotation._y);
+		const float s1 = std::sin(rotation._y);
 
 		mymath::Mat4 res{ 1.0 };
 		res[0] = scale._x * (c1 * c3 + s1 * s2 * s3);
@@ -113,36 +113,43 @@ namespace scop
 		};
 	}*/
 
-	glm::mat3 TransformComponent::normalMatrix()
+	mymath::Mat4 TransformComponent::normalMatrix()
 	{
-		const float c3 = glm::cos(rotation._z);
-		const float s3 = glm::sin(rotation._z);
-		const float c2 = glm::cos(rotation._x);
-		const float s2 = glm::sin(rotation._x);
-		const float c1 = glm::cos(rotation._y);
-		const float s1 = glm::sin(rotation._y);
+		const float c3 = std::cos(rotation._z);
+		const float s3 = std::sin(rotation._z);
+		const float c2 = std::cos(rotation._x);
+		const float s2 = std::sin(rotation._x);
+		const float c1 = std::cos(rotation._y);
+		const float s1 = std::sin(rotation._y);
+
 		mymath::Vec3 invScale;
 		invScale._x = 1.0f / scale._x;
 		invScale._y = 1.0f / scale._y;
 		invScale._z = 1.0f / scale._z;
 	
-		return glm::mat3{
-			{
-				invScale._x * (c1 * c3 + s1 * s2 * s3),
-				invScale._x * (c2 * s3),
-				invScale._x * (c1 * s2 * s3 - c3 * s1),
-			},
-			{
-				invScale._y * (c3 * s1 * s2 - c1 * s3),
-				invScale._y * (c2 * c3),
-				invScale._y * (c1 * c3 * s2 + s1 * s3),
-			},
-			{
-				invScale._z * (c2 * s1),
-				invScale._z * (-s2),
-				invScale._z * (c1 * c2),
-			},
-		};
+		mymath::Mat4 res{ 1.0 };
+
+		res[0] = invScale._x * (c1 * c3 + s1 * s2 * s3);
+		res[1] = invScale._x * (c2 * s3);
+		res[2] = invScale._x * (c1 * s2 * s3 - c3 * s1);
+		res[3] = 0.0f;
+
+		res[4] = invScale._y * (c3 * s1 * s2 - c1 * s3);
+		res[5] = invScale._y * (c2 * c3);
+		res[6] = invScale._y * (c1 * c3 * s2 + s1 * s3);
+		res[7] = 0.0f;
+
+		res[8] = invScale._z * (c2 * s1);
+		res[9] = invScale._z * (-s2);
+		res[10] = invScale._z * (c1 * c2);
+		res[11] = 0.0f;
+
+		res[12] = 0;
+		res[13] = 0;
+		res[14] = 0;
+		res[15] = 1.0f;
+
+		return res;
 	}
 
 	vks::VulkanModel* ScopObject::CreateBoxMeshObject()
@@ -170,8 +177,8 @@ namespace scop
 
 		try
 		{
-			glm::mat4 flipYMatrix = glm::mat4(1.0f);
-			flipYMatrix[1][1] = -1.0f;
+			mymath::Mat4 flipYMatrix = mymath::Mat4(1.0f);
+			flipYMatrix[5] = -1.0f;
 
 			ObjMeshLoader objLoader{ filename, glm::mat4(1.0f) };
 
