@@ -175,6 +175,7 @@
     <ClInclude Include="ObjMeshLoader.h" />
     <ClInclude Include="Scop.h" />
     <ClInclude Include="ScopObject.h" />
+    <ClInclude Include="Types.h" />
     <ClInclude Include="Vector.h" />
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="VulkanCommandBuffer.h" />

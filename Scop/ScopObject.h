@@ -9,6 +9,7 @@ namespace scop
 {
 	class Scop;
 	class VulkanRenderer;
+	class VulkanTexture;
 
 	struct TransformComponent {
 		mymath::Vec3 translation{};
@@ -46,16 +47,10 @@ namespace scop
 	{
 		Scop* _scop;
 		vks::VulkanRenderer* _renderer;
-		// TODO 
-		// class IModel 로 추상화 하여, VulkanRenderer로만 접근 가능하게 변경
 		vks::IVulkanModel* _vulkanModel;
 
-		
-
-		// TODO
-		// obj file에서 데이터 읽어 오는 거로 확장
-		vks::IVulkanModel* CreateBoxMeshObject();
-		vks::IVulkanModel* CreateObjMeshObject(std::string& filename);
+		vks::IVulkanModel* CreateBoxMeshObject(std::string& BmpFilename);
+		vks::IVulkanModel* CreateObjMeshObject(std::string& ObjFilename, std::string& BmpFilename);
 
 		void	UpdateTransform();
 		void	Cleanup();
@@ -65,7 +60,7 @@ namespace scop
 
 		ScopObject();
 		~ScopObject();
-		bool	Initialize(Scop* scop, std::string& filename);
+		bool	Initialize(Scop* scop, std::string& ObjFilename, std::string& BmpFilename);
 		void	setTranslation(float x, float y, float z);
 		void	setScale(float x, float y, float z);
 		void	setRotation(float x, float y, float z);

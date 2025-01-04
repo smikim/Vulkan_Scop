@@ -32,8 +32,8 @@ void BmpLoader::readFile(std::string& filename)
 		int padding = (4 - (rowSize % 4)) % 4;
 		int imageSize = (rowSize + padding) * infoHeader.btHeight;
 
-		std::cout << infoHeader.btWidth * infoHeader.btHeight * bytesPerPixel << std::endl;
-		std::cout << imageSize << std::endl;
+		//std::cout << infoHeader.btWidth * infoHeader.btHeight * bytesPerPixel << std::endl;
+		//std::cout << imageSize << std::endl;
 
 		in.seekg(fileHeader.bfOffBits, in.beg);
 		data = std::make_unique<uint8_t[]>(imageSize);

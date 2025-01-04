@@ -82,7 +82,7 @@ namespace scop
 		return res;
 	}
 
-	vks::IVulkanModel* ScopObject::CreateBoxMeshObject()
+	vks::IVulkanModel* ScopObject::CreateBoxMeshObject(std::string& BmpFilename)
 	{
 		vks::VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
 
@@ -96,24 +96,26 @@ namespace scop
 		// Texture 추가 하는 코드
 		_renderer->BeginCreateMesh(_vulkanModel, vertices);
 		_renderer->InsertIndexBuffer(_vulkanModel, indices);
-		_renderer->EndCreateMesh(_vulkanModel);
+		_renderer->EndCreateMesh(_vulkanModel, BmpFilename);
 
 		return _vulkanModel;
 	}
 
-	vks::IVulkanModel* ScopObject::CreateObjMeshObject(std::string& filename)
+	// 여기서 텍스춰를 만들어 주게 바꾼다?
+	vks::IVulkanModel* ScopObject::CreateObjMeshObject(std::string& ObjFilename, std::string& BmpFilename)
 	{
 		vks::VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
 
 		try
 		{
-			ObjMeshLoader objLoader{ filename };
+			ObjMeshLoader objLoader{ ObjFilename };
 
 			_vulkanModel = _renderer->CreateBasicMeshObject();
 
 			_renderer->BeginCreateMesh(_vulkanModel, objLoader.vertices);
 			_renderer->InsertIndexBuffer(_vulkanModel, objLoader.indices);
-			_renderer->EndCreateMesh(_vulkanModel);
+			
+			_renderer->EndCreateMesh(_vulkanModel, BmpFilename);
 
 		}
 		catch (const std::exception& e)
@@ -150,12 +152,12 @@ namespace scop
 		Cleanup();
 	}
 	
-	bool ScopObject::Initialize(Scop* scop, std::string& filename)
+	bool ScopObject::Initialize(Scop* scop, std::string& ObjFilename, std::string& BmpFilename)
 	{
 		_scop = scop;
 		_renderer = scop->getVulkanRenderer();
 
-		_vulkanModel = CreateObjMeshObject(filename);
+		_vulkanModel = CreateObjMeshObject(ObjFilename, BmpFilename);
 
 		if (_vulkanModel == nullptr)
 			return false;
@@ -217,14 +219,14 @@ namespace scop
 
 	void ScopObject::Run()
 	{
-		_renderer->updateObjectUniformBuffer(_vulkanModel, _transform.mat4(), _colorMode);
+
 	}
 
 	void ScopObject::Render()
 	{
 		if (_vulkanModel)
 		{
-			_renderer->renderMeshObject(_vulkanModel);
+			_renderer->renderMeshObject(_vulkanModel, _transform.mat4(), _colorMode);
 		}
 	}
 

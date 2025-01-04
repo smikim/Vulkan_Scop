@@ -18,20 +18,11 @@ namespace vks {
 
 		VkPipelineVertexInputStateCreateInfo vertex_input_state{ VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
 
-		// TODO
 		vertex_input_state.pVertexAttributeDescriptions = pipelineState.get_vertex_input_state().attributes.data();
 		vertex_input_state.vertexAttributeDescriptionCount = to_u32(pipelineState.get_vertex_input_state().attributes.size());
 
 		vertex_input_state.pVertexBindingDescriptions = pipelineState.get_vertex_input_state().bindings.data();
 		vertex_input_state.vertexBindingDescriptionCount = to_u32(pipelineState.get_vertex_input_state().bindings.size());
-
-		/*vertex_input_state.pVertexAttributeDescriptions = nullptr;
-		vertex_input_state.vertexAttributeDescriptionCount = 0;
-
-		vertex_input_state.pVertexBindingDescriptions = nullptr;
-		vertex_input_state.vertexBindingDescriptionCount = 0;*/
-
-
 
 		VkPipelineInputAssemblyStateCreateInfo input_assembly_state{ VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
 
@@ -137,13 +128,6 @@ namespace vks {
 		{
 			std::cerr << "Cannot create GraphicsPipelines" << std::endl;
 		}
-
-		/*for (auto shader_module : shader_modules)
-		{
-			vkDestroyShaderModule(device.get_handle(), shader_module, nullptr);
-		}
-
-		state = pipeline_state;*/
 	}
 
 	VulkanPipeline::~VulkanPipeline()

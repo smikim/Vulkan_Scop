@@ -31,18 +31,17 @@ namespace scop
 			keyboardController.moveObjects(_window.getGLFWwindow(), frameTime, ScopObjects);
 			keyboardController.switchColoring(_window.getGLFWwindow(), ScopObjects);
 
-			update();
 			render();
 		}
 
 		vkDeviceWaitIdle(_renderer.getVulkanDevice()->getLogicalDevice());
 	}
 
-	void Scop::prepare(std::string& filename)
+	void Scop::prepare(std::string& ObjFilename, std::string& BmpFilename)
 	{
 		_renderer.initVulkan();
 		try {
-			createScopObject(filename);
+			createScopObject(ObjFilename, BmpFilename);
 		}
 		catch (const std::exception& e)
 		{
@@ -75,14 +74,14 @@ namespace scop
 			return ;
 	}
 
-	ScopObject* Scop::createScopObject(std::string& filename)
+	ScopObject* Scop::createScopObject(std::string& ObjFilename, std::string& BmpFilename)
 	{
 		ScopObject* obj = new ScopObject;
 		
-		if (!obj->Initialize(this, filename))
+		if (!obj->Initialize(this, ObjFilename, BmpFilename))
 		{
 			delete obj;
-			throw std::runtime_error("Failed to initialize ScopObject with filename: " + filename);
+			throw std::runtime_error("Failed to initialize ScopObject with filename: " + ObjFilename);
 		}
 		
 		ScopObjects.push_back(obj);

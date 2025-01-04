@@ -75,7 +75,7 @@ namespace scop {
 
 		// 중심축 이동 
 		// save triangle id
-		int vertexCount = vertices.size();
+		size_t vertexCount = vertices.size();
 		mymath::Vec3 center = sum / (float)vertexCount;
 
 		uint32_t triangleID = 0;

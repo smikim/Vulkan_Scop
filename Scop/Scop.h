@@ -16,13 +16,11 @@ namespace scop
 		Scop();
 		~Scop();
 
-		//bool initVulkan();
-
 		void run();
-		void prepare(std::string& filename);
+		void prepare(std::string& ObjFilename, std::string& BmpFilename);
 		void update();
 		void render();
-		ScopObject* createScopObject(std::string& filename);
+		ScopObject* createScopObject(std::string& ObjFilename, std::string& BmpFilename);
 
 	private:
 		

@@ -203,6 +203,9 @@
     <ClInclude Include="ObjMeshLoader.h">
       <Filter>library</Filter>
     </ClInclude>
+    <ClInclude Include="Types.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

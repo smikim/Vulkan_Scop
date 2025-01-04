@@ -14,10 +14,6 @@ namespace vks
 
 	vks::VulkanRenderer::~VulkanRenderer()
 	{
-		vkDestroyDescriptorPool(_vulkanDevice->getLogicalDevice(), _basicDescriptorPool, nullptr);
-		vkDestroyDescriptorSetLayout(_vulkanDevice->getLogicalDevice(), _basicDescriptorSetLayout, nullptr);
-		
-		vkDestroyPipelineLayout(_vulkanDevice->getLogicalDevice(), _basicPipelineLayout, nullptr);
 		_swapChain->cleanup();
 		
 		VkDevice logicalDevice = _vulkanDevice->getLogicalDevice();
@@ -40,8 +36,6 @@ namespace vks
 			vkDestroyFence(logicalDevice, _WaitFences[i], nullptr);
 			vkDestroySemaphore(logicalDevice, _PresentCompleteSemaphores[i], nullptr);
 			vkDestroySemaphore(logicalDevice, _RenderCompleteSemaphores[i], nullptr);
-			vkDestroyBuffer(logicalDevice, _uniformBuffers[i].buffer, nullptr);
-			vkFreeMemory(logicalDevice, _uniformBuffers[i].memory, nullptr);
 		}
 
 		delete _drawCommandBuffer;
@@ -51,7 +45,7 @@ namespace vks
 
 		vkDestroyCommandPool(_vulkanDevice->getLogicalDevice(), _CmdPool, nullptr);
 
-		delete _texture;
+		//delete _texture;
 		delete _vulkanDevice;
 	}
 
@@ -83,38 +77,11 @@ namespace vks
 		createCommandPool();
 
 		
-
 		_drawCommandBuffer = new VulkanCommandBuffer(*_vulkanDevice, _CmdPool, _swapChain->_imageCount);
 
 		_basicPSO = new Graphics::BasicPSO(*_vulkanDevice, _RenderPass);
 		
 		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
-
-		// TODO
-		// loadTexture();
-
-		std::string filename{ "textures/lena.bmp" };
-		
-		//std::string filename{ "textures/sample.bmp" };
-		
-		//std::string filename{ "textures/640-480-sample.bmp" };
-		//std::string filename{ "textures/blackbuck.bmp" };
-		//std::string filename{ "textures/bmp_24.bmp" };
-		
-		//std::string filename{ "textures/dots.bmp" };
-
-		_texture = new VulkanTexture(filename, queue.get_queue(), _vulkanDevice);
-
-		createUniformBuffers();
-		createDescriptorSetLayout();
-		createDescriptorPool();
-		createDescriptorSets();
-
-		createPipelineLayout();
-
-		
-
-		init_basicPipeline(_basicPSO, _basicPipelineLayout);
 
 		_prepared = true;
 
@@ -124,6 +91,7 @@ namespace vks
 	IVulkanModel* VulkanRenderer::CreateBasicMeshObject()
 	{
 		VulkanModel* vulkanModel = new VulkanModel;
+
 		vulkanModel->Initialize(this);
 
 		return vulkanModel;
@@ -131,7 +99,6 @@ namespace vks
 
 	void VulkanRenderer::BeginCreateMesh(IVulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices)
 	{
-		//model->createVertexBuffer(vertices);
 		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
 		if (vulkanModel) {
 			vulkanModel->createVertexBuffer(vertices);
@@ -154,11 +121,21 @@ namespace vks
 		}
 	}
 
-	void VulkanRenderer::EndCreateMesh(IVulkanModel* model)
+	VulkanTexture* VulkanRenderer::CreateTexture(std::string& filename)
+	{
+		VulkanTexture* texture;
+		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
+
+		texture = new VulkanTexture(filename, queue.get_queue(), _vulkanDevice);
+
+		return texture;
+	}
+
+	void VulkanRenderer::EndCreateMesh(IVulkanModel* model, std::string& BmpFilename)
 	{
 		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
 		if (vulkanModel) {
-			vulkanModel->EndCreateMesh();
+			vulkanModel->EndCreateMesh(BmpFilename);
 		}
 		else {
 			// Handle error: model is not of type VulkanModel
@@ -179,10 +156,10 @@ namespace vks
 		}
 	}
 
-	void VulkanRenderer::init_basicPipeline(Graphics::BasicPSO* basicPSO, VkPipelineLayout pipelineLayout)
+	void VulkanRenderer::init_basicPipeline(VkPipelineLayout pipelineLayout)
 	{
-		basicPSO->setPipelineLayout(pipelineLayout);
-		basicPSO->initPSO();
+		_basicPSO->setPipelineLayout(pipelineLayout);
+		_basicPSO->initPSO();
 
 		// Scene rendering with shadows applied
 		std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
@@ -191,7 +168,7 @@ namespace vks
 		shaderStage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 
 		shaderStage.stage = VK_SHADER_STAGE_VERTEX_BIT;
-		shaderStage.module = basicPSO->_VertShaderModule;
+		shaderStage.module = _basicPSO->_VertShaderModule;
 		shaderStage.pName = "main";
 
 		shaderStage.pNext = nullptr;
@@ -200,11 +177,11 @@ namespace vks
 		shaderStages.push_back(shaderStage);
 
 		shaderStage.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-		shaderStage.module = basicPSO->_FragShaderModule;
+		shaderStage.module = _basicPSO->_FragShaderModule;
 
 		shaderStages.push_back(shaderStage);
 
-		_basicPipeline = new VulkanPipeline(*_vulkanDevice, shaderStages, basicPSO->_pipelineState);
+		_basicPipeline = new VulkanPipeline(*_vulkanDevice, shaderStages, _basicPSO->_pipelineState);
 	}
 
 	VkResult VulkanRenderer::beginRender()
@@ -289,27 +266,19 @@ namespace vks
 		return VK_SUCCESS;
 	}
 
-	void VulkanRenderer::renderMeshObject(IVulkanModel* object)
+	void VulkanRenderer::renderMeshObject(IVulkanModel* object, mymath::Mat4 worldMat, uint32_t colorMode)
 	{
 		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
 		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(object);
 
 		if (vulkanModel)
 		{
-			// render object
-
 			_basicPipeline->bind(commandBuffer);
+		
+			vulkanModel->bind(commandBuffer, _currentFrame);
 
-			// Bind descriptor set for the currrent frame's uniform buffer, so the shader uses the data from that buffer for this draw
-
-			// TODO  
-			// VulkanModel에서 가지고 있는 자기의 descriptorSets를 바인딩 시킨후 , 
-			// vertex, index buffer를 바인딩 시킨후
-			// draw 해주는 방향으로 수정 해야함 !!
-
-			vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &_uniformBuffers[_currentFrame].descriptorSet, 0, nullptr);
-
-			vulkanModel->bind(commandBuffer);
+			updateObjectUniformBuffer(vulkanModel, worldMat, colorMode);
+			
 			vulkanModel->draw(commandBuffer);
 		}
 	}
@@ -362,20 +331,6 @@ namespace vks
 		if (glfwCreateWindowSurface(_instance.getInstance(), _window.getGLFWwindow(), nullptr, &_Surface) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create window surface");
 		}
-	}
-
-	void VulkanRenderer::createPipelineLayout()
-	{
-		VkPipelineLayoutCreateInfo pipelineLayoutCI{};
-		pipelineLayoutCI.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutCI.pNext = nullptr;
-		pipelineLayoutCI.setLayoutCount = 1;
-		pipelineLayoutCI.pSetLayouts = &_basicDescriptorSetLayout;
-		pipelineLayoutCI.pushConstantRangeCount = 0;
-		pipelineLayoutCI.pPushConstantRanges = nullptr;
-
-		VK_CHECK_RESULT(vkCreatePipelineLayout(_vulkanDevice->getLogicalDevice(), &pipelineLayoutCI, nullptr, &_basicPipelineLayout));
-
 	}
 
 	void VulkanRenderer::setupRenderPass()
@@ -565,8 +520,6 @@ namespace vks
 
 		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
 
-		// TODO: 코드 정리
-
 		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 		// The submit info structure specifies a command buffer queue submission batch
@@ -641,37 +594,9 @@ namespace vks
 		_prepared = true;
 	}
 
-	void VulkanRenderer::createDescriptorSetLayout()
+	std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> VulkanRenderer::createUniformBuffers()
 	{
-		std::array<VkDescriptorSetLayoutBinding, 2> setLayoutBindings{};
-
-		// Binding 0: Uniform buffer (Vertex shader)
-		setLayoutBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		setLayoutBindings[0].binding = 0;
-		setLayoutBindings[0].descriptorCount = 1;
-		setLayoutBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-		setLayoutBindings[0].pImmutableSamplers = nullptr;
-
-		/*
-			Binding 1: Combined image sampler (used to pass per object texture information)
-		*/
-		setLayoutBindings[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		setLayoutBindings[1].binding = 1;
-		// Accessible from the fragment shader only
-		setLayoutBindings[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-		setLayoutBindings[1].descriptorCount = 1;
-		setLayoutBindings[1].pImmutableSamplers = nullptr;
-
-		VkDescriptorSetLayoutCreateInfo descriptorLayoutCI{};
-		descriptorLayoutCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		descriptorLayoutCI.pNext = nullptr;
-		descriptorLayoutCI.bindingCount = static_cast<uint32_t>(setLayoutBindings.size());
-		descriptorLayoutCI.pBindings = setLayoutBindings.data();
-		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(_vulkanDevice->getLogicalDevice(), &descriptorLayoutCI, nullptr, &_basicDescriptorSetLayout));
-	}
-
-	void VulkanRenderer::createUniformBuffers()
-	{
+		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> uniformBuffers;
 		// Prepare and initialize the per-frame uniform buffer blocks containing shader uniforms
 		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
 		VkMemoryRequirements memReqs;
@@ -691,9 +616,9 @@ namespace vks
 
 		// Create the buffers
 		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
-			VK_CHECK_RESULT(vkCreateBuffer(_vulkanDevice->getLogicalDevice(), &bufferInfo, nullptr, &_uniformBuffers[i].buffer));
+			VK_CHECK_RESULT(vkCreateBuffer(_vulkanDevice->getLogicalDevice(), &bufferInfo, nullptr, &uniformBuffers[i].buffer));
 			// Get memory requirements including size, alignment and memory type
-			vkGetBufferMemoryRequirements(_vulkanDevice->getLogicalDevice(), _uniformBuffers[i].buffer, &memReqs);
+			vkGetBufferMemoryRequirements(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].buffer, &memReqs);
 			allocInfo.allocationSize = memReqs.size;
 			// Get the memory type index that supports host visible memory access
 			// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
@@ -701,138 +626,44 @@ namespace vks
 			// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
 			allocInfo.memoryTypeIndex = _vulkanDevice->get_gpu().getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 			// Allocate memory for the uniform buffer
-			VK_CHECK_RESULT(vkAllocateMemory(_vulkanDevice->getLogicalDevice(), &allocInfo, nullptr, &(_uniformBuffers[i].memory)));
+			VK_CHECK_RESULT(vkAllocateMemory(_vulkanDevice->getLogicalDevice(), &allocInfo, nullptr, &(uniformBuffers[i].memory)));
 			// Bind memory to buffer
-			VK_CHECK_RESULT(vkBindBufferMemory(_vulkanDevice->getLogicalDevice(), _uniformBuffers[i].buffer, _uniformBuffers[i].memory, 0));
+			VK_CHECK_RESULT(vkBindBufferMemory(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].buffer, uniformBuffers[i].memory, 0));
 			// We map the buffer once, so we can update it without having to map it again
-			VK_CHECK_RESULT(vkMapMemory(_vulkanDevice->getLogicalDevice(), _uniformBuffers[i].memory, 0, sizeof(ShaderData), 0, (void**)&_uniformBuffers[i].mapped));
+			VK_CHECK_RESULT(vkMapMemory(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].memory, 0, sizeof(ShaderData), 0, (void**)&uniformBuffers[i].mapped));
 		}
+
+		return uniformBuffers;
 	}
 
 	void VulkanRenderer::updateObjectUniformBuffer(IVulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode)
 	{
-		static auto startTime = std::chrono::high_resolution_clock::now();
-
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
-		ShaderData ubo{};
-
-		ubo.modelMatrix = worldMat;
-
-		ubo.viewMatrix = mymath::lookAt(mymath::Vec3(0.0f, 0.0f, -8.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 1.0f, 0.0f));
-		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
-
-	
-		ubo.projectionMatrix = mymath::perspective(mymath::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
-		//ubo.projectionMatrix = mymath::perspectiveGLM(mymath::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
-		//ubo.projectionMatrix[5] *= -1;
-
-		ubo.colorMode = colorMode;
-
-		memcpy(_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
-	}
-
-	// Descriptors are allocated from a pool, that tells the implementation how many and what types of descriptors we are going to use (at maximum)
-	void VulkanRenderer::createDescriptorPool()
-	{
-		std::array<VkDescriptorPoolSize, 2> descriptorPoolSizes{};
-
-		// We need to tell the API the number of max. requested descriptors per type
+		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
 		
-		// This example only one descriptor type (uniform buffer)
-		descriptorPoolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		// We have one buffer (and as such descriptor) per frame
-		descriptorPoolSizes[0].descriptorCount = MAX_CONCURRENT_FRAMES;
+		if (vulkanModel) {
+			static auto startTime = std::chrono::high_resolution_clock::now();
 
-		// Combined image samples : 1 per object texture
-		descriptorPoolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		descriptorPoolSizes[1].descriptorCount = MAX_CONCURRENT_FRAMES;
+			auto currentTime = std::chrono::high_resolution_clock::now();
+			float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+			ShaderData ubo{};
+
+			ubo.modelMatrix = worldMat;
+
+			ubo.viewMatrix = mymath::lookAt(mymath::Vec3(0.0f, 0.0f, -8.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 1.0f, 0.0f));
+			//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
 
 
-		// For additional types you need to add new entries in the type count list
-		// E.g. for two combined image samplers :
-		// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		// typeCounts[1].descriptorCount = 2;
+			ubo.projectionMatrix = mymath::perspective(mymath::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
+			//ubo.projectionMatrix = mymath::perspectiveGLM(mymath::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+			//ubo.projectionMatrix[5] *= -1;
 
-		// Create the global descriptor pool
-		// All descriptors used in this example are allocated from this pool
-		VkDescriptorPoolCreateInfo descriptorPoolCI{};
-		descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-		descriptorPoolCI.pNext = nullptr;
-		descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(descriptorPoolSizes.size());
-		descriptorPoolCI.pPoolSizes = descriptorPoolSizes.data();
-		// Set the max. number of descriptor sets that can be requested from this pool (requesting beyond this limit will result in an error)
-		// Our sample will create one set per uniform buffer per frame
-		descriptorPoolCI.maxSets = MAX_CONCURRENT_FRAMES;
-		VK_CHECK_RESULT(vkCreateDescriptorPool(_vulkanDevice->getLogicalDevice(), &descriptorPoolCI, nullptr, &_basicDescriptorPool));
+			ubo.colorMode = colorMode;
 
-	}
-
-	// Shaders access data using descriptor sets that "point" at our uniform buffers
-	// The descriptor sets make use of the descriptor set layouts created above 
-	void VulkanRenderer::createDescriptorSets()
-	{
-		// Allocate one descriptor set per frame from the global descriptor pool
-		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
-			VkDescriptorSetAllocateInfo allocInfo{};
-			allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-			allocInfo.descriptorPool = _basicDescriptorPool;
-			allocInfo.descriptorSetCount = 1;
-			allocInfo.pSetLayouts = &_basicDescriptorSetLayout;
-			VK_CHECK_RESULT(vkAllocateDescriptorSets(_vulkanDevice->getLogicalDevice(), &allocInfo, &_uniformBuffers[i].descriptorSet));
-
-			// Update the descriptor set determining the shader binding points
-			// For every binding point used in a shader there needs to be one
-			// descriptor set matching that binding point
-			VkWriteDescriptorSet writeDescriptorSet{};
-			std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
-
-			// The buffer's information is passed using a descriptor info structure
-			VkDescriptorBufferInfo bufferInfo{};
-			bufferInfo.buffer = _uniformBuffers[i].buffer;
-			bufferInfo.range = sizeof(ShaderData);
-
-			// Setup a descriptor image info for the current texture to be used as a combined image sampler
-			VkDescriptorImageInfo textureDescriptor;
-			// The image's view (images are never directly accessed by the shader, but rather through views defining subresources)
-			textureDescriptor.imageView = _texture->_TextureImageView;
-			// The sampler (Telling the pipeline how to sample the texture, including repeat, border, etc.)
-			textureDescriptor.sampler = _texture->_TextureSampler;
-			// The current layout of the image(Note: Should always fit the actual use, e.g.shader read)
-			textureDescriptor.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-			// Binding 0 : Uniform buffer
-			writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSets[0].dstSet = _uniformBuffers[i].descriptorSet;
-			writeDescriptorSets[0].descriptorCount = 1;
-			writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			writeDescriptorSets[0].pBufferInfo = &bufferInfo;
-			writeDescriptorSets[0].dstBinding = 0;
-
-			/*
-				Binding 1: Object texture
-			*/
-			writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			writeDescriptorSets[1].dstSet = _uniformBuffers[i].descriptorSet;
-			writeDescriptorSets[1].dstBinding = 1;
-			writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-			// Images use a different descriptor structure, so we use pImageInfo instead of pBufferInfo
-			writeDescriptorSets[1].pImageInfo = &textureDescriptor;
-			writeDescriptorSets[1].descriptorCount = 1;
-
-			vkUpdateDescriptorSets(_vulkanDevice->getLogicalDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
+			vulkanModel->updateUniformBuffer(_currentFrame, &ubo);
+			//memcpy(vulkanModel->_uniformBuffers[_currentFrame].mapped, &ubo, sizeof(ubo));
 		}
-	}
-
-	void VulkanRenderer::loadTexture()
-	{
-		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
-
-
-		std::string filename{ "textures/lena.bmp" };
-		_texture = new VulkanTexture(filename, queue.get_queue(), _vulkanDevice);
-
+		
 	}
 
 }

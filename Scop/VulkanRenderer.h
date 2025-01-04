@@ -12,6 +12,7 @@
 
 #include "Camera.h"
 #include "Matrix.h"
+#include "Types.h"
 
 #include <chrono>
 
@@ -28,37 +29,6 @@ namespace vks
 	class VulkanRenderer
 	{
 	public:
-		// Uniform buffer block object
-		struct UniformBuffer {
-			VkDeviceMemory memory;
-			VkBuffer buffer;
-			// The descriptor set stores the resources bound to the binding points in a shader
-			// It connects the binding points of the different shaders with the buffers and images used for those bindings
-			VkDescriptorSet descriptorSet;
-			// We keep a pointer to the mapped buffer, so we can easily update it's contents via a memcpy
-			uint8_t* mapped{ nullptr };
-		};
-		// We use one UBO per frame, so we can have a frame overlap and make sure that uniforms aren't updated while still in use
-		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> _uniformBuffers;
-
-		// For simplicity we use the same uniform block layout as in the shader:
-		//
-		//	layout(set = 0, binding = 0) uniform UBO
-		//	{
-		//		mat4 projectionMatrix;
-		//		mat4 modelMatrix;
-		//		mat4 viewMatrix;
-		//	} ubo;
-		//
-		// This way we can just memcopy the ubo data to the ubo
-		// Note: You should use data types that align with the GPU in order to avoid manual padding (vec4, mat4)
-		struct ShaderData {
-			alignas(16) mymath::Mat4 modelMatrix;
-			alignas(16) mymath::Mat4 viewMatrix;
-			alignas(16)  mymath::Mat4 projectionMatrix;
-			alignas(16) uint32_t colorMode;
-		}; 
-		
 		VulkanRenderer(GlfwWindow& window);
 		
 		~VulkanRenderer();
@@ -67,17 +37,19 @@ namespace vks
 		
 		IVulkanModel* CreateBasicMeshObject();
 		void BeginCreateMesh(IVulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices);
-		void InsertIndexBuffer(IVulkanModel* model, std::vector<uint32_t>& indices);
-		void EndCreateMesh(IVulkanModel* model);
+		void InsertIndexBuffer(IVulkanModel* model, std::vector<uint32_t>& indices);	
+		void EndCreateMesh(IVulkanModel* model, std::string& BmpFilename);
 		void DeleteMeshObject(IVulkanModel* model);
 
-		void init_basicPipeline(Graphics::BasicPSO* basicPSO, VkPipelineLayout pipelineLayout);
+
+		VulkanTexture* CreateTexture(std::string& filename);
+		void init_basicPipeline(VkPipelineLayout pipelineLayout);
 		
 		VkResult beginRender();
 		void beginRenderPass();
 		void endRenderPass();
 		VkResult endRender();
-		void renderMeshObject(IVulkanModel* object);
+		void renderMeshObject(IVulkanModel* object, mymath::Mat4 worldMat, uint32_t colorMode);
 
 		VkResult prepareFrame();
 		VkResult submitFrame();
@@ -102,12 +74,10 @@ namespace vks
 			return static_cast<float>(_width) / static_cast<float>(_height); 
 		};
 
-		// TODO
-		void updateObjectUniformBuffer(IVulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode);
-
+		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> createUniformBuffers();
+		
 		Graphics::BasicPSO* _basicPSO;
 		VulkanPipeline* _basicPipeline;
-		VkPipelineLayout _basicPipelineLayout{ VK_NULL_HANDLE };
 
 	private:
 		// TODO
@@ -125,7 +95,7 @@ namespace vks
 			return device_extensions;
 		}
 
-		void createPipelineLayout();
+		
 		void setupRenderPass();
 		void setupDepthStencil(uint32_t& width, uint32_t& height);
 		void setupFrameBuffer(uint32_t& width, uint32_t& height);
@@ -135,14 +105,8 @@ namespace vks
 
 		VkResult submitCommandBuffer();
 		void windowResize();
-
-		void createDescriptorSetLayout();
-		void createUniformBuffers();
 		
-		void createDescriptorPool();
-		void createDescriptorSets();
-
-		void loadTexture();
+		void updateObjectUniformBuffer(IVulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode);
 
 		uint32_t _width;
 		uint32_t _height;
@@ -184,9 +148,6 @@ namespace vks
 		// Command buffer pool
 		VkCommandPool _CmdPool{ VK_NULL_HANDLE };
 
-		// Command buffers used for rendering
-		//std::vector<VkCommandBuffer> _drawCmdBuffers;
-
 		// Semaphores are used to coordinate operations within the graphics queue and ensure correct command ordering
 		std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> _PresentCompleteSemaphores{};
 		std::array<VkSemaphore, MAX_CONCURRENT_FRAMES> _RenderCompleteSemaphores{};
@@ -195,14 +156,5 @@ namespace vks
 
 		// Command buffers used for rendering
 		VulkanCommandBuffer* _drawCommandBuffer;
-
-		VkDescriptorSetLayout _basicDescriptorSetLayout{ VK_NULL_HANDLE };
-		VkDescriptorPool _basicDescriptorPool{ VK_NULL_HANDLE };
-
-		// TODO 
-		VulkanModel *_model;
-		VulkanTexture* _texture;
-		BmpLoader* _bmpLoader;
-
 	};
 }
