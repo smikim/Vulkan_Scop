@@ -106,25 +106,30 @@ namespace scop
 			if (glfwGetKey(window, moves.spinOnZ) == GLFW_RELEASE)
 				obj->_transform.spinOnZ = false;
 
-		mymath::Vec3 rotate{ 0 };
+			mymath::Vec3 rotate{ 0 };
 			if (obj->_transform.spinAtX)
-				rotate._x += 0.01f;
+				rotate._x += 0.1f;
 			if (obj->_transform.spinAtY)
-				rotate._y += 0.01f;
+				rotate._y += 0.1f;
 			if (obj->_transform.spinAtZ)
-				rotate._z += 0.01f;
+				rotate._z += 0.1f;
 
 			if (rotate.dot(rotate) > std::numeric_limits<float>::epsilon()) {
-				obj->_transform.rotation += lookSpeed * dt * rotate.normalize();
+				
+				//obj->_transform.rotation += moveSpeed * dt * rotate.normalize();
+				
+				///////////////////////////////////////////////////////////////////
+
+				mymath::Vec3 offset = moveSpeed * dt * rotate.normalize();			
+				obj->moveRotation(offset._x, offset._y, offset._z);
+				
 			}
 
 
 			const mymath::Vec3 forwardDir{ 0.f, 0.f, 1.f };
 			mymath::Vec3 upDir{ 0.f, -1.f, 0.f };
 
-			const mymath::Vec3 rightDir = upDir.cross(forwardDir).normalize();
-			
-		
+			const mymath::Vec3 rightDir = upDir.cross(forwardDir).normalize();		
 			//const mymath::Vec3 rightDir{ 1.0f, 0.0f, 0.0f };
 			upDir = forwardDir.cross(rightDir).normalize();
 			//upDir = rightDir.cross(forwardDir).normalize();
@@ -135,6 +140,7 @@ namespace scop
 				moveDir += forwardDir;
 				//std::cout << moveDir._x << moveDir._y << moveDir._z << std::endl;
 			}
+
 			if (glfwGetKey(window, moves.moveDownInZ) == GLFW_PRESS) moveDir -= forwardDir;
 			if (glfwGetKey(window, moves.moveRightInX) == GLFW_PRESS) moveDir += rightDir;
 			if (glfwGetKey(window, moves.moveLeftInX) == GLFW_PRESS) moveDir -= rightDir;
@@ -142,8 +148,12 @@ namespace scop
 			if (glfwGetKey(window, moves.moveLeftInY) == GLFW_PRESS) moveDir -= upDir;
 
 			if (moveDir.dot(moveDir) > std::numeric_limits<float>::epsilon()) {
-				obj->_transform.translation += moveSpeed * dt * moveDir.normalize();
+				//obj->_transform.translation += moveSpeed * dt * moveDir.normalize();
 				//std::cout << obj->_transform.translation._x << obj->_transform.translation._y << obj->_transform.translation._z << std::endl;
+			
+				////////////////////////////////////////////////////////////////////////////
+				mymath::Vec3 offset = moveSpeed * dt * moveDir.normalize();
+				obj->moveTranslation(offset._x, offset._y, offset._z);
 			}
 		}
 	}

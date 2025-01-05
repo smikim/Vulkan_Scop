@@ -31,6 +31,7 @@ namespace scop
 			keyboardController.moveObjects(_window.getGLFWwindow(), frameTime, ScopObjects);
 			keyboardController.switchColoring(_window.getGLFWwindow(), ScopObjects);
 
+			update();
 			render();
 		}
 
@@ -85,8 +86,11 @@ namespace scop
 		}
 		
 		ScopObjects.push_back(obj);
-		obj->_transform.translation = { .0f, .0f, 0.0f };
-		obj->_transform.scale = { 0.5f, 0.5f, 0.5f };
+		//obj->_transform.translation = { .0f, .0f, 0.0f };
+		//obj->_transform.scale = { 0.5f, 0.5f, 0.5f };
+		obj->setTranslation(0.f, 0.f, 0.f);
+		obj->setScale(0.5f, 0.5f, 0.5f);
+		//obj->setRotation(1.0f, 1.0f, 1.0f);
 		return obj;
 	}
 

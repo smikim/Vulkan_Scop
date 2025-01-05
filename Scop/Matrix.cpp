@@ -87,13 +87,23 @@ namespace mymath
 
 
 		// 행렬 곱셈 수행
-		for (row = 0; row < 4; ++row) {
-			for (col = 0; col < 4; ++col) {
-				for (k = 0; k < 4; ++k) {
-					res._m[row + col * 4] += _m[row + k * 4] * other._m[k + 4 * col];
+		//for (row = 0; row < 4; ++row) {
+		//	for (col = 0; col < 4; ++col) {
+		//		for (k = 0; k < 4; ++k) {
+		//			res._m[row + col * 4] += _m[row + k * 4] * other._m[k + 4 * col];
+		//		}
+		//	}
+		//}
+
+		for (std::size_t row = 0; row < 4; ++row) {
+			for (std::size_t col = 0; col < 4; ++col) {
+				res._m[row * 4 + col] = 0; // 초기화
+				for (std::size_t k = 0; k < 4; ++k) {
+					res._m[row * 4 + col] += _m[row * 4 + k] * other._m[k * 4 + col];
 				}
 			}
 		}
+
 		*this = res;
 		return *this;
 	}
@@ -131,22 +141,7 @@ namespace mymath
 
 		return res;
 	}
-	//mat4 LookAtRH(vec3 eye, vec3 target, vec3 up)
-	//{
-	//	vec3 zaxis = normal(eye - target);    // The "forward" vector.
-	//	vec3 xaxis = normal(cross(up, zaxis));// The "right" vector.
-	//	vec3 yaxis = cross(zaxis, xaxis);     // The "up" vector.
 
-	//	// Create a 4x4 view matrix from the right, up, forward and eye position vectors
-	//	mat4 viewMatrix = {
-	//		vec4(xaxis.x,            yaxis.x,            zaxis.x,       0),
-	//		vec4(xaxis.y,            yaxis.y,            zaxis.y,       0),
-	//		vec4(xaxis.z,            yaxis.z,            zaxis.z,       0),
-	//		vec4(-dot(xaxis, eye), -dot(yaxis, eye), -dot(zaxis, eye),  1)
-	//	};
-
-	//	return viewMatrix;
-	//}
 
 	Mat4 lookAt(const Vec3& eye, const Vec3& center, const Vec3& up)
 	{
@@ -206,42 +201,6 @@ namespace mymath
 		return res;
 	}
 
-	//Mat4	perspective(float fov, float aspect_ratio, float near, float far) noexcept {
-	//	const float	tanHalfFov = std::tan(fov / 2);
-	//	const float	range = far - near;
-
-	//	return Mat4{
-	//		// Row 1
-	//		1 / (aspect_ratio * tanHalfFov), 0, 0, 0,
-	//		// Row 2
-	//		0, 1 / tanHalfFov, 0, 0,
-	//		// Row 3
-	//		0, 0, -(far + near) / range, -1,
-	//		// Row 4
-	//		0, 0, -2 * far * near / range, 0
-	//	};
-	//}
-
-//	static mat4 perspective(float fov, float aspectRatio, float near, float far) {
-//		float tanHalfFov = tan(fov * 0.5f);
-//
-//		mat4 projMatrix;
-//
-//		projMatrix(0, 0) = 1.0f / (aspectRatio * tanHalfFov);
-//		projMatrix(1, 1) = 1.0f / tanHalfFov;
-//		projMatrix(2, 2) = -(far + near) / (far - near);
-//		projMatrix(2, 3) = -1.0f;
-//		projMatrix(3, 2) = -(2.0f * far * near) / (far - near);
-//
-//#ifdef MATH_FORCE_DEPTH_ZERO_TO_ONE
-//		// Adjust projection matrix for [0, 1] depth range
-//		projMatrix(2, 2) = -2.0f / (far - near);
-//		projMatrix(2, 3) = -(far + near) / (far - near);
-//#endif
-//
-//		return projMatrix;
-//	}
-
 
 	// https://registry.khronos.org/OpenGL-Refpages/gl2.1/xhtml/gluPerspective.xml
 
@@ -260,13 +219,13 @@ namespace mymath
 
 		res._m[0] = 1.f / (aspect_ratio * f);
 		res._m[5] = 1.f / f;
-		//res._m[10] = -(far + near) / range;
+
 		res._m[10] = far / (far - near);
 
-		//res._m[11] = -1;
+	
 		res._m[11] = 1.f;
 		
-		//res._m[14] = -2 * far * near / range;
+	
 		res._m[14] = -(far * near) / (far - near);
 
 
@@ -285,13 +244,10 @@ namespace mymath
 		res._m[5] = 1.f / f;
 		
 		res._m[10] = -(far + near) / range;
-		//res._m[10] = far / (far - near);
 
 		res._m[11] = -1;
-		//res._m[11] = 1.f;
 
 		res._m[14] = -(2 * far * near) / range;
-		//res._m[14] = -(far * near) / (far - near);
 
 
 		return res;
@@ -304,8 +260,8 @@ namespace mymath
 	{
 		Vec3 normalizedAxis = axis.normalize();
 		float rad = angle; // in radians
-		float cosA = cos(rad);
-		float sinA = sin(rad);
+		float cosA = std::cos(rad);
+		float sinA = std::sin(rad);
 		float oneMinusCosA = 1.0f - cosA;
 
 		// Calculate components of the rotation matrix
@@ -319,18 +275,25 @@ namespace mymath
 		float ySinA = normalizedAxis._y * sinA;
 		float zSinA = normalizedAxis._z * sinA;
 
-		Mat4 rotationMatrix;
+		Mat4 rotationMatrix{ 1.0 };
 		rotationMatrix._m[0] = xx * oneMinusCosA + cosA;
-		rotationMatrix._m[1] = xy * oneMinusCosA + zSinA;
-		rotationMatrix._m[2] = xz * oneMinusCosA - ySinA;
+		rotationMatrix._m[1] = xy * oneMinusCosA - zSinA;
+		rotationMatrix._m[2] = xz * oneMinusCosA + ySinA;
+		rotationMatrix._m[3] = 0;
 
-		rotationMatrix._m[4] = xy * oneMinusCosA - zSinA;
+		rotationMatrix._m[4] = xy * oneMinusCosA + zSinA;
 		rotationMatrix._m[5] = yy * oneMinusCosA + cosA;
-		rotationMatrix._m[6] = yz * oneMinusCosA + xSinA;
+		rotationMatrix._m[6] = yz * oneMinusCosA - xSinA;
+		rotationMatrix._m[7] = 0;
 
-		rotationMatrix._m[8] = xz * oneMinusCosA + ySinA;
-		rotationMatrix._m[9] = yz * oneMinusCosA - xSinA;
+		rotationMatrix._m[8] = xz * oneMinusCosA - ySinA;
+		rotationMatrix._m[9] = yz * oneMinusCosA + xSinA;
 		rotationMatrix._m[10] = zz * oneMinusCosA + cosA;
+		rotationMatrix._m[11] = 0;
+
+		rotationMatrix._m[12] = 0;
+		rotationMatrix._m[13] = 0;
+		rotationMatrix._m[14] = 0;
 		rotationMatrix._m[15] = 1.0f;
 
 		// Apply the rotation to the input matrix

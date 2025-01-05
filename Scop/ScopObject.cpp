@@ -131,8 +131,11 @@ namespace scop
 
 	void ScopObject::UpdateTransform()
 	{
-		_transform.worldMatrix = _transform.matTrans * _transform.matRot;
-		_transform.worldMatrix = _transform.worldMatrix * _transform.matScale;
+		//_transform.worldMatrix = _transform.matTrans * _transform.matRot;
+		//_transform.worldMatrix = _transform.worldMatrix * _transform.matScale;
+
+		_transform.worldMatrix = _transform.matScale * _transform.matRot;
+		_transform.worldMatrix = _transform.worldMatrix * _transform.matTrans;
 	}
 
 	void ScopObject::Cleanup()
@@ -200,17 +203,27 @@ namespace scop
 		_transform.rotation._y += y;
 		_transform.rotation._z += z;
 
-		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(x), mymath::Vec3(1.0f, 0.0f, 0.0f));
-		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(y), mymath::Vec3(0.0f, 1.0f, 0.0f));
-		_transform.matRot = mymath::rotate(_transform.matRot, mymath::radians(z), mymath::Vec3(0.0f, 0.0f, 1.0f));
+		_transform.rotation._x = mymath::mod(_transform.rotation._x, mymath::two_pi<float>());
+		_transform.rotation._y = mymath::mod(_transform.rotation._y, mymath::two_pi<float>());
+		_transform.rotation._z = mymath::mod(_transform.rotation._z, mymath::two_pi<float>());
+
+		mymath::Mat4 Rot{ 1.0f };
+
+		_transform.matRot = mymath::rotate(Rot, _transform.rotation._y, mymath::Vec3(0.0f, 1.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, _transform.rotation._x, mymath::Vec3(1.0f, 0.0f, 0.0f));
+		_transform.matRot = mymath::rotate(_transform.matRot, _transform.rotation._z, mymath::Vec3(0.0f, 0.0f, 1.0f));
 
 	}
 
 	void ScopObject::moveTranslation(float x, float y, float z)
 	{
-		_transform.translation._x += x;
+		/*_transform.translation._x += x;
 		_transform.translation._y += y;
-		_transform.translation._z += z;
+		_transform.translation._z += z;*/
+
+		_transform.translation._x = x;
+		_transform.translation._y = y;
+		_transform.translation._z = z;
 
 		_transform.matTrans = mymath::translate(_transform.matTrans, _transform.translation);
 
@@ -219,14 +232,15 @@ namespace scop
 
 	void ScopObject::Run()
 	{
-
+		UpdateTransform();
 	}
 
 	void ScopObject::Render()
 	{
 		if (_vulkanModel)
 		{
-			_renderer->renderMeshObject(_vulkanModel, _transform.mat4(), _colorMode);
+			//_renderer->renderMeshObject(_vulkanModel, _transform.mat4(), _colorMode);
+			_renderer->renderMeshObject(_vulkanModel, _transform.getWorldMatrix(), _colorMode);
 		}
 	}
 

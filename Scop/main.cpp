@@ -6,7 +6,6 @@
 // https://people.math.sc.edu/Burkardt/data/obj/obj.html
 
 int main(int argc, char *argv) {
-
     /*if (argc < 2 || argc > 3)
     {
         std::cerr << "Usage: " << argv[0] << " <obj file> [bmp file]" << std::endl;
