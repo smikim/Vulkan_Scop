@@ -48,8 +48,6 @@ void main() {
     } else if (ubo.colorMode == 2) {
         // 2: rainbow
         outColor = vec4(rainbowColors[fragTriangleID % 7], 1.0);
-     
-        //outColor = texture(textureSampler, fragUV);
         
     } else {
         // 3: gray
